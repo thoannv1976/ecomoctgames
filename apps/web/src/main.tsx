@@ -1,0 +1,30 @@
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import './index.css';
+import { syncTimeOnce } from './lib/api';
+import { Home } from './pages/Home';
+import { Play } from './pages/Play';
+import { Facilitator } from './pages/Facilitator';
+import { Screen } from './pages/Screen';
+import { LtiLaunch } from './pages/LtiLaunch';
+import { LangProvider } from './lib/i18n';
+
+syncTimeOnce();
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <LangProvider>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/p/:code" element={<Play />} />
+        <Route path="/gv" element={<Facilitator />} />
+        <Route path="/gv/:code" element={<Screen />} />
+        <Route path="/lti-launch" element={<LtiLaunch />} />
+        <Route path="*" element={<Home />} />
+      </Routes>
+    </BrowserRouter>
+    </LangProvider>
+  </StrictMode>,
+);
