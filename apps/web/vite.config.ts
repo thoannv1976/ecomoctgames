@@ -16,11 +16,12 @@ const mdAlias = { find: /^@arena\/md$/, replacement: fileURLToPath(new URL('../.
 // Round-sim framework and Game 2 public types (hidden models stay on the server).
 const rsAlias = { find: /^@arena\/rs$/, replacement: fileURLToPath(new URL('../../packages/engine/src/rs/types.ts', import.meta.url)) };
 const croAlias = { find: /^@arena\/cro$/, replacement: fileURLToPath(new URL('../../packages/engine/src/cro/types.ts', import.meta.url)) };
+const adAlias = { find: /^@arena\/ad$/, replacement: fileURLToPath(new URL('../../packages/engine/src/ad/types.ts', import.meta.url)) };
 const pwAlias = { find: /^@arena\/pw$/, replacement: fileURLToPath(new URL('../../packages/engine/src/pw/types.ts', import.meta.url)) };
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  resolve: { alias: [typesAlias, ceoAlias, mdAlias, rsAlias, pwAlias, croAlias] },
+  resolve: { alias: [typesAlias, ceoAlias, mdAlias, rsAlias, pwAlias, croAlias, adAlias] },
   server: {
     port: 5174,
     strictPort: true,

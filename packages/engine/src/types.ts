@@ -9,7 +9,7 @@ export interface T {
 }
 export const tx = (en: string, vi: string): T => ({ en, vi });
 
-export type GameId = 'unit-economics' | 'ceo-sim' | 'market-detective' | 'platform-wars' | 'cro-battle';
+export type GameId = 'unit-economics' | 'ceo-sim' | 'market-detective' | 'platform-wars' | 'cro-battle' | 'ad-clash';
 
 export interface GameInfo {
   id: GameId;
@@ -75,6 +75,17 @@ export const GAMES: Record<GameId, GameInfo> = {
       'Sáu cửa hàng giống hệt nhau, chuyển đổi 1,8%. Chạy A/B test, tránh bẫy xem trộm, hiệu ứng mới lạ và mẫu nhỏ – chỉ tỷ lệ chuyển đổi THẬT mới tính, công bố lúc cuối.',
     ),
     minutes: tx('25 min', '25 phút'),
+  },
+  'ad-clash': {
+    id: 'ad-clash',
+    chapter: 7,
+    icon: '📣',
+    name: tx('Ad Auction & Creator Clash', 'Đại chiến quảng cáo và nhà sáng tạo'),
+    short: tx(
+      'Six serum brands, VND 2 bn a month: bid in the search auction, book creators (beware fake followers), retarget, livestream and CRM – reported ROAS lies, profit does not.',
+      'Sáu thương hiệu serum, mỗi tháng 2 tỷ: đấu giá từ khóa, đặt creator (cẩn thận follower ảo), nhắm lại, livestream và CRM – ROAS báo cáo có thể sai, lợi nhuận thì không.',
+    ),
+    minutes: tx('30–35 min', '30–35 phút'),
   },
 };
 

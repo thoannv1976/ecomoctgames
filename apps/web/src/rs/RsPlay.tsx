@@ -93,7 +93,7 @@ function Decide({ room, session, now, me, web }: { room: RsRoomDoc; session: Ses
     setLoaded(true);
   }, [me, loaded, web, round]);
   const info = web.roundInfo(round);
-  const problem = web.check(d, me, round);
+  const problem = web.check(d, me, round, room);
   const submitted = room.order.filter((id) => room.players[id]?.bot || room.submitted[id]).length;
   async function submit() {
     setBusy(true);

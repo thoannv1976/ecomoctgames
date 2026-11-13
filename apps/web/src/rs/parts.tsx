@@ -41,7 +41,7 @@ export interface RsWeb<D = any, R = any, V = any> {
   Briefing: ComponentType<{ compact?: boolean }>;
   roundInfo: (round: number) => { title: T; text: T };
   initial: (me: RsMe<R, V> | null, round: number) => D;
-  check: (d: D, me: RsMe<R, V> | null, round: number) => T | null;
+  check: (d: D, me: RsMe<R, V> | null, round: number, room: RsRoomDoc) => T | null;
   Form: ComponentType<{ room: RsRoomDoc; me: RsMe<R, V> | null; d: D; set: (d: D) => void; round: number }>;
   Report: ComponentType<{ report: R; room: RsRoomDoc }>;
   /** Extra projector / results panel built from room.pub. */

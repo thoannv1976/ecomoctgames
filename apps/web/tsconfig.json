@@ -12,7 +12,8 @@
       "@arena/md": ["../../packages/engine/src/md/types.ts"],
       "@arena/rs": ["../../packages/engine/src/rs/types.ts"],
       "@arena/pw": ["../../packages/engine/src/pw/types.ts"],
-      "@arena/cro": ["../../packages/engine/src/cro/types.ts"]
+      "@arena/cro": ["../../packages/engine/src/cro/types.ts"],
+      "@arena/ad": ["../../packages/engine/src/ad/types.ts"]
     }
   },
   "include": ["src"]
