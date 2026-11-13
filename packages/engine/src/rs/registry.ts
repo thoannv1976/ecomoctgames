@@ -2,6 +2,7 @@
 import { GameError } from '../room.js';
 import { AD_CLASH } from '../ad/game.js';
 import { CRO_BATTLE } from '../cro/game.js';
+import { PEAK_DAY } from '../pd/game.js';
 import { PLATFORM_WARS } from '../pw/game.js';
 import type { RsGame } from './room.js';
 import type { RsGameId } from './types.js';
@@ -10,6 +11,7 @@ export const RS_GAMES: Partial<Record<RsGameId, RsGame>> = {
   'platform-wars': PLATFORM_WARS,
   'cro-battle': CRO_BATTLE,
   'ad-clash': AD_CLASH,
+  'peak-day': PEAK_DAY,
 };
 
 export function rsGame(id: string): RsGame {

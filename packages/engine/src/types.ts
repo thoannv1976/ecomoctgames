@@ -9,7 +9,7 @@ export interface T {
 }
 export const tx = (en: string, vi: string): T => ({ en, vi });
 
-export type GameId = 'unit-economics' | 'ceo-sim' | 'market-detective' | 'platform-wars' | 'cro-battle' | 'ad-clash';
+export type GameId = 'unit-economics' | 'ceo-sim' | 'market-detective' | 'platform-wars' | 'cro-battle' | 'ad-clash' | 'peak-day';
 
 export interface GameInfo {
   id: GameId;
@@ -86,6 +86,17 @@ export const GAMES: Record<GameId, GameInfo> = {
       'Sáu thương hiệu serum, mỗi tháng 2 tỷ: đấu giá từ khóa, đặt creator (cẩn thận follower ảo), nhắm lại, livestream và CRM – ROAS báo cáo có thể sai, lợi nhuận thì không.',
     ),
     minutes: tx('30–35 min', '30–35 phút'),
+  },
+  'peak-day': {
+    id: 'peak-day',
+    chapter: 8,
+    icon: '🛍️',
+    name: tx('Peak Day Ops 11.11', 'Đại tiệc 11.11'),
+    short: tx(
+      'Prepare stock, fulfilment, COD and returns, survive three blocks of 11.11 against five rivals, then read your own P&L: why sales up can mean profit down.',
+      'Chuẩn bị hàng, giao vận, COD và đổi trả, vượt qua ba ca của ngày 11.11 trước năm đối thủ, rồi đọc lãi lỗ của chính mình: vì sao doanh số tăng mà lợi nhuận giảm.',
+    ),
+    minutes: tx('25–30 min', '25–30 phút'),
   },
 };
 
