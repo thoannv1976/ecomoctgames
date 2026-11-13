@@ -9,6 +9,7 @@ import { getHostedRooms, getLti, setHostedRooms, type HostedRoom } from '../lib/
 import { GamePicker, READY } from './Home';
 import { asCeo, isCeoRoom, rankedIds as ceoRanked, useCeoAutoAdvance } from '../ceo/parts';
 import { ROUNDS } from '@arena/ceo';
+import { asMd, isMdRoom, rankedIds as mdRanked, useMdAutoAdvance } from '../md/parts';
 
 export function Facilitator() {
   const { t, tr } = useLang();
@@ -23,6 +24,7 @@ export function Facilitator() {
   const [fillBots, setFillBots] = useState(true);
   const [autoNext, setAutoNext] = useState(12);
   const [decideMin, setDecideMin] = useState(6);
+  const [caseMin, setCaseMin] = useState(7);
   const [resultsSec, setResultsSec] = useState(0);
   const [cats, setCats] = useState<Category[]>(CATEGORIES.slice());
   const [busy, setBusy] = useState(false);
@@ -42,6 +44,8 @@ export function Facilitator() {
         const r =
           game === 'ceo-sim'
             ? await api.createRoom({ game, hostPlays: false, title: name, settings: { decideSec: decideMin * 60, resultsSec, botLevel: level, fillBots: title ? false : fillBots } })
+            : game === 'market-detective'
+              ? await api.createRoom({ game, hostPlays: false, title: name, settings: { caseSec: caseMin * 60, resultsSec, botLevel: level, fillBots: title ? false : fillBots } })
             : await api.createRoom({ game, hostPlays: false, title: name, settings: { questionCount: questions, botLevel: level, fillBots: title ? false : fillBots, autoNextSec: autoNext, categories: cats } });
         made.push({ code: r.code, hostToken: r.hostToken, title: name, createdAt: Date.now() });
       }
@@ -60,7 +64,7 @@ export function Facilitator() {
   });
   // Class-wide board: every student in every room, by points.
   const board = live
-    .filter((room) => !isCeoRoom(room))
+    .filter((room) => !isCeoRoom(room) && !isMdRoom(room))
     .flatMap((room) => room.order.map((id) => ({ room, p: room.players[id]! })))
     .filter((x) => x.p && !x.p.bot && x.room.status !== 'lobby')
     .sort((a, b) => b.p.score - a.p.score || b.p.correct - a.p.correct);
@@ -91,7 +95,23 @@ export function Facilitator() {
             <label className="label" htmlFor="pre">{tr('Room name', 'Tên phòng')}</label>
             <input id="pre" className="input" value={prefix} maxLength={30} onChange={(e) => setPrefix(e.target.value)} />
           </div>
-          {game === 'ceo-sim' ? (
+          {game === 'market-detective' ? (
+            <>
+              <div>
+                <label className="label" htmlFor="cm">{tr('Minutes per case', 'Số phút mỗi vụ')}</label>
+                <select id="cm" className="input" value={caseMin} onChange={(e) => setCaseMin(Number(e.target.value))}>
+                  {[5, 6, 7, 8, 10].map((n) => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="label" htmlFor="rsm">{tr('Next case', 'Sang vụ mới')}</label>
+                <select id="rsm" className="input" value={resultsSec} onChange={(e) => setResultsSec(Number(e.target.value))}>
+                  <option value={0}>{tr('Lecturer clicks', 'Giảng viên bấm')}</option>
+                  {[60, 90, 120].map((n) => <option key={n} value={n}>{tr(`Auto after ${n}s`, `Tự động sau ${n} giây`)}</option>)}
+                </select>
+              </div>
+            </>
+          ) : game === 'ceo-sim' ? (
             <>
               <div>
                 <label className="label" htmlFor="dm">{tr('Minutes per quarter', 'Số phút mỗi quý')}</label>
@@ -162,7 +182,7 @@ export function Facilitator() {
       {rooms.length > 0 && (
         <div className="my-4 flex flex-wrap items-center gap-2">
           <button type="button" className="btn-dark" disabled={!waiting.length} onClick={startAll}>▶ {tr(`Start ${waiting.length} waiting room(s)`, `Bắt đầu ${waiting.length} phòng đang chờ`)}</button>
-          <button type="button" className="btn-ghost" disabled={!live.length} onClick={() => downloadText(`ecom-arena-results-${new Date().toISOString().slice(0, 10)}.csv`, resultsCsv(live.filter((r) => !isCeoRoom(r))))}>
+          <button type="button" className="btn-ghost" disabled={!live.length} onClick={() => downloadText(`ecom-arena-results-${new Date().toISOString().slice(0, 10)}.csv`, resultsCsv(live.filter((r) => !isCeoRoom(r) && !isMdRoom(r))))}>
             ⬇ {tr('Export results (Excel/CSV)', 'Xuất kết quả (Excel/CSV)')}
           </button>
           <button type="button" className="btn-ghost text-bad" onClick={() => window.confirm(tr('Remove all rooms from this list? (Rooms stay for 3 days.)', 'Bỏ tất cả phòng khỏi danh sách này? (Phòng vẫn tồn tại 3 ngày.)')) && setRooms([])}>
@@ -205,6 +225,8 @@ function RoomCard({ hosted, onSnapshot, onRemove }: { hosted: HostedRoom; onSnap
   useAutoAdvance(room, now, hosted.hostToken);
   const isCeo = isCeoRoom(room);
   useCeoAutoAdvance(room && isCeo ? asCeo(room) : null, now, hosted.hostToken);
+  const isMd = isMdRoom(room);
+  useMdAutoAdvance(room && isMd ? asMd(room) : null, now, hosted.hostToken);
   const [error, setError] = useState<T | null>(null);
   useEffect(() => {
     if (room) onSnapshot(room);
@@ -228,6 +250,44 @@ function RoomCard({ hosted, onSnapshot, onRemove }: { hosted: HostedRoom; onSnap
       </div>
     );
   const humans = humansOf(room).length;
+  if (isMd) {
+    const c = asMd(room);
+    return (
+      <div className="card space-y-3">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <p className="font-bold">{c.title} <span className="text-xs font-normal text-ink/50">· Market Detective</span></p>
+            <p className="text-3xl font-extrabold tracking-[0.2em]">{c.code}</p>
+          </div>
+          <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${c.status === 'lobby' ? 'bg-amber/25' : c.status === 'finished' ? 'bg-ink/10' : 'bg-ok/15 text-ok'}`}>
+            {c.status === 'lobby' ? tr('Waiting', 'Đang chờ') : c.status === 'finished' ? tr('Finished', 'Đã kết thúc') : `${tr('Case', 'Vụ')} ${c.round}/${c.rounds} · ${c.status === 'decide' ? tr('researching', 'nghiên cứu') : tr('results', 'kết quả')}`}
+          </span>
+        </div>
+        <p className="text-sm text-ink/60">👥 {humans} {tr('students', 'sinh viên')} · {c.settings.caseSec ? tr(`${Math.round(c.settings.caseSec / 60)} min/case`, `${Math.round(c.settings.caseSec / 60)} phút/vụ`) : tr('no limit', 'không giới hạn')}</p>
+        {c.status === 'lobby' ? (
+          <p className="min-h-[3rem] text-sm">{c.order.map((id) => c.players[id]?.name).join(', ') || <span className="text-ink/40">{tr('Nobody yet…', 'Chưa có ai vào…')}</span>}</p>
+        ) : (
+          <ol className="min-h-[3rem] space-y-0.5 text-sm">
+            {mdRanked(c).slice(0, 3).map((id) => (
+              <li key={id} className="flex justify-between"><span className="truncate">{c.standings[id]?.rank ?? '–'}. {c.players[id]?.bot ? '🤖 ' : ''}{c.players[id]?.name}</span><b className="tabular-nums">{c.standings[id]?.total ?? 0}</b></li>
+            ))}
+            {c.status === 'decide' && <li className="text-ink/60">{tr('Submitted', 'Đã nộp')}: {c.order.filter((id) => c.players[id]?.bot || c.submitted[id]).length}/{c.order.length} · 🎤 {c.interviews.length}/2</li>}
+          </ol>
+        )}
+        <ErrorNote err={error} />
+        <div className="flex flex-wrap gap-2">
+          {c.status === 'lobby' && <button type="button" className="btn-primary px-3 py-1.5 text-sm" disabled={!humans} onClick={() => run(() => api.start(c.code, hosted.hostToken))}>▶ {tr('Start', 'Bắt đầu')}</button>}
+          {c.status === 'decide' && c.deadline !== null && <button type="button" className="btn-ghost px-3 py-1.5 text-sm" onClick={() => run(() => api.extend(c.code, hosted.hostToken))}>{tr('+1 min', '+1 phút')}</button>}
+          {c.status === 'decide' && <button type="button" className="btn-ghost px-3 py-1.5 text-sm" onClick={() => window.confirm(tr('Close this case now?', 'Đóng vụ này ngay?')) && run(() => api.advance(c.code, { hostToken: hosted.hostToken, expectStatus: 'decide', expectRound: c.round }))}>{tr('Close case', 'Đóng vụ')}</button>}
+          {c.status === 'results' && <button type="button" className="btn-primary px-3 py-1.5 text-sm" onClick={() => run(() => api.advance(c.code, { hostToken: hosted.hostToken, expectStatus: 'results', expectRound: c.round }))}>{tr('Next case →', 'Vụ tiếp →')}</button>}
+          <a href={`/gv/${c.code}`} target="_blank" rel="noreferrer" className="btn-dark px-3 py-1.5 text-sm">🖥 {tr('Projector', 'Màn hình chiếu')}</a>
+          {(c.status === 'decide' || c.status === 'results') && <button type="button" className="btn-ghost px-3 py-1.5 text-sm" onClick={() => window.confirm(tr(`End ${c.title} now?`, `Kết thúc sớm ${c.title}?`)) && run(() => api.end(c.code, hosted.hostToken))}>{tr('End', 'Kết thúc')}</button>}
+          <button type="button" className="btn-ghost px-3 py-1.5 text-sm" onClick={() => void navigator.clipboard?.writeText(joinUrl(c.code))}>📋 Link</button>
+          {c.status === 'finished' && <button type="button" className="btn-ghost px-3 py-1.5 text-sm" onClick={onRemove}>{tr('Remove from list', 'Bỏ khỏi danh sách')}</button>}
+        </div>
+      </div>
+    );
+  }
   if (isCeo) {
     const c = asCeo(room);
     return (

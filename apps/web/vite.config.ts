@@ -10,9 +10,12 @@ const typesAlias = { find: /^@arena\/types$/, replacement: fileURLToPath(new URL
 // Game 12 public types (the market model stays on the server).
 const ceoAlias = { find: /^@arena\/ceo$/, replacement: fileURLToPath(new URL('../../packages/engine/src/ceo/types.ts', import.meta.url)) };
 
+// Game 4 public types (cases, truths and source biases stay on the server).
+const mdAlias = { find: /^@arena\/md$/, replacement: fileURLToPath(new URL('../../packages/engine/src/md/types.ts', import.meta.url)) };
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  resolve: { alias: [typesAlias, ceoAlias] },
+  resolve: { alias: [typesAlias, ceoAlias, mdAlias] },
   server: {
     port: 5174,
     strictPort: true,

@@ -8,7 +8,8 @@
     "noUnusedParameters": true,
     "paths": {
       "@arena/types": ["../../packages/engine/src/types.ts"],
-      "@arena/ceo": ["../../packages/engine/src/ceo/types.ts"]
+      "@arena/ceo": ["../../packages/engine/src/ceo/types.ts"],
+      "@arena/md": ["../../packages/engine/src/md/types.ts"]
     }
   },
   "include": ["src"]

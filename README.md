@@ -7,7 +7,7 @@ Every text exists in **English and Vietnamese**; each player switches with the E
 |---|---|---|
 | 🧮 Unit Economics Showdown – *Thám tử lợi nhuận* | 9 | live |
 | 🏢 CEO Simulator – *Mô phỏng CEO* | 12 | live |
-| 🔎 Market Detective – *Thám tử thị trường* | 4 | batch 1, next |
+| 🔎 Market Detective – *Thám tử thị trường* | 4 | live |
 
 Plan: [docs/ke-hoach-dot-1.md](docs/ke-hoach-dot-1.md).
 
@@ -15,7 +15,7 @@ Plan: [docs/ke-hoach-dot-1.md](docs/ke-hoach-dot-1.md).
 Practise alone · 1 vs 5 AI (Easy/Medium/Hard) · class battle: 6 students per room, many rooms at once, class-wide leaderboard and a Final room on the lecturer dashboard (`/gv`).
 
 ## Structure
-- `packages/engine` – pure TypeScript game logic. Game 9 questions are **templates** (`src/unit/templates.ts`): every game draws fresh numbers, so answers cannot be copied between rooms. `npm run test:unit`; preview questions with `npx tsx packages/engine/scripts/peek-unit.ts [template-id]`.
+- `packages/engine` – pure TypeScript game logic. Game 9 questions are **templates** (`src/unit/templates.ts`): every game draws fresh numbers, so answers cannot be copied between rooms. `npm run test:unit`; preview questions with `npx tsx packages/engine/scripts/peek-unit.ts [template-id]`. Game 12 lives in `src/ceo/` (balance: `scripts/balance-ceo.ts`); Game 4 in `src/md/` – 6 cases, each game draws 3 with a fresh true market size and biased sources (balance: `scripts/balance-md.ts`).
 - `apps/api` – Fastify on Cloud Run (`arena-api`). All writes go through the API in Firestore transactions; answers and tokens live in `rooms/{code}/private/state`.
 - `apps/web` – React + Vite + Tailwind on Firebase Hosting; the browser reads only `rooms/{code}` and imports only `packages/engine/src/types.ts`.
 

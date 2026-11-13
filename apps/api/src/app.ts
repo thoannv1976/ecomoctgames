@@ -44,6 +44,21 @@ import {
   submitCeo,
   type CeoPrivate,
   type CeoRoomDoc,
+  SOURCES,
+  DECISIONS,
+  advanceMd,
+  buyMd,
+  createMdRoom,
+  extendMd,
+  finishMd,
+  joinMd,
+  mdLmsResults,
+  mdMe,
+  removeMdPlayer,
+  startMd,
+  submitMd,
+  type MdPrivate,
+  type MdRoomDoc,
 } from '@arena/engine';
 import { displayName, submitResult, verifyTicket, type LtiConfig } from './lti.js';
 
@@ -89,6 +104,14 @@ const ceoSettings = z
     fillBots: z.boolean().optional(),
   })
   .optional();
+const mdSettings = z
+  .object({
+    caseSec: z.number().int().min(0).max(1200).optional(),
+    resultsSec: z.number().int().min(0).max(300).optional(),
+    botLevel: z.enum(['easy', 'medium', 'hard']).optional(),
+    fillBots: z.boolean().optional(),
+  })
+  .optional();
 const en = <T extends string>(list: readonly T[]) => z.enum(list as unknown as [T, ...T[]]);
 const ceoDecision = z.object({
   price: en(PRICE_POS),
@@ -117,7 +140,7 @@ const schemas = {
     title: z.string().max(40).optional(),
     hostPlays: z.boolean(),
     hostName: z.string().max(40).optional(),
-    game: z.enum(['unit-economics', 'ceo-sim']).optional(),
+    game: z.enum(['unit-economics', 'ceo-sim', 'market-detective']).optional(),
     settings: z.record(z.string(), z.unknown()).optional(),
     ltiSession: z.string().min(10).max(80).optional(),
   }),
@@ -135,12 +158,24 @@ const schemas = {
   }),
   me: z.object({ playerId: z.string().max(40), playerToken: token }),
   ceoDecide: z.object({ playerId: z.string().max(40), playerToken: token, round: z.number().int().min(1), decision: ceoDecision }),
+  mdBuy: z.object({ playerId: z.string().max(40), playerToken: token, round: z.number().int().min(1), source: en(SOURCES) }),
+  mdSubmit: z.object({
+    playerId: z.string().max(40),
+    playerToken: token,
+    round: z.number().int().min(1),
+    submission: z.object({ estimate: z.number().positive().max(10000), decision: en(DECISIONS), flags: z.array(z.number().int().min(0).max(10)).max(10) }),
+  }),
 };
 
-type AnyRoom = RoomDoc | CeoRoomDoc;
-type AnyPriv = RoomPrivate | CeoPrivate;
+type AnyRoom = RoomDoc | CeoRoomDoc | MdRoomDoc;
+type AnyPriv = RoomPrivate | CeoPrivate | MdPrivate;
 const isCeo = (r: AnyRoom): r is CeoRoomDoc => r.game === 'ceo-sim';
-const NAMES: Record<string, { en: string; vi: string }> = { 'unit-economics': { en: 'Unit Economics Showdown', vi: 'Thám tử lợi nhuận' }, 'ceo-sim': { en: 'CEO Simulator', vi: 'Mô phỏng CEO' } };
+const isMd = (r: AnyRoom): r is MdRoomDoc => r.game === 'market-detective';
+const NAMES: Record<string, { en: string; vi: string }> = {
+  'unit-economics': { en: 'Unit Economics Showdown', vi: 'Thám tử lợi nhuận' },
+  'ceo-sim': { en: 'CEO Simulator', vi: 'Mô phỏng CEO' },
+  'market-detective': { en: 'Market Detective', vi: 'Thám tử thị trường' },
+};
 const wrongGame = (r: AnyRoom) =>
   new GameError('wrong_game', { en: `This room plays ${NAMES[r.game]?.en ?? r.game}.`, vi: `Phòng này là game ${NAMES[r.game]?.vi ?? r.game}.` }, 409);
 const E = (en: string, vi: string) => ({ en, vi });
@@ -192,7 +227,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
         tx.set(roomRef, room);
         tx.set(privRef, priv);
       }
-      if (!wasFinished && room.status === 'finished') toSend = isCeo(room) ? ceoLmsResults(room, priv as CeoPrivate) : lmsResults(room as RoomDoc, priv as RoomPrivate);
+      if (!wasFinished && room.status === 'finished') toSend = isCeo(room) ? ceoLmsResults(room, priv as CeoPrivate) : isMd(room) ? mdLmsResults(room, priv as MdPrivate) : lmsResults(room as RoomDoc, priv as RoomPrivate);
       return out;
     });
     if (toSend.length) await sendGrades(roomCode, toSend);
@@ -202,13 +237,18 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   /** Quiz-only and CEO-only routes. */
   const mutateQuiz = <T>(roomCode: string, fn: (room: RoomDoc, priv: RoomPrivate, t: number) => T) =>
     mutateAny(roomCode, (room, priv, t) => {
-      if (isCeo(room)) throw wrongGame(room);
+      if (isCeo(room) || isMd(room)) throw wrongGame(room);
       return fn(room, priv as RoomPrivate, t);
     });
   const mutateCeo = <T>(roomCode: string, fn: (room: CeoRoomDoc, priv: CeoPrivate, t: number) => T) =>
     mutateAny(roomCode, (room, priv, t) => {
       if (!isCeo(room)) throw wrongGame(room);
       return fn(room, priv as CeoPrivate, t);
+    });
+  const mutateMd = <T>(roomCode: string, fn: (room: MdRoomDoc, priv: MdPrivate, t: number) => T) =>
+    mutateAny(roomCode, (room, priv, t) => {
+      if (!isMd(room)) throw wrongGame(room);
+      return fn(room, priv as MdPrivate, t);
     });
 
   /** Sends each Moodle player's result to the Hub (which queues and retries delivery to Moodle). */
@@ -291,7 +331,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
 
   app.post('/api/rooms', { config: { rateLimit: { max: 60, timeWindow: '1 minute' } } }, async (req) => {
     const body = schemas.create.parse(req.body);
-    const gameSettings = body.game === 'ceo-sim' ? ceoSettings.parse(body.settings) : quizSettings.parse(body.settings);
+    const gameSettings = body.game === 'ceo-sim' ? ceoSettings.parse(body.settings) : body.game === 'market-detective' ? mdSettings.parse(body.settings) : quizSettings.parse(body.settings);
     const lms = await loadLtiSession(body.ltiSession);
     if (lms && body.hostPlays && !body.hostName?.trim()) body.hostName = lms.name;
     if (body.hostPlays && !body.hostName?.trim()) throw new GameError('bad_name', E('Please enter your name.', 'Vui lòng nhập tên.'));
@@ -306,7 +346,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
         ...(gameSettings ? { settings: gameSettings as never } : {}),
         ...(lms && body.hostPlays ? { hostLms: bindingOf(lms) } : {}),
       };
-      const created = body.game === 'ceo-sim' ? createCeoRoom(common, t, cryptoRng) : createRoom(common, t, cryptoRng);
+      const created = body.game === 'ceo-sim' ? createCeoRoom(common, t, cryptoRng) : body.game === 'market-detective' ? createMdRoom(common, t, cryptoRng) : createRoom(common, t, cryptoRng);
       const expireAt = new Date(t + ROOM_TTL_MS);
       const roomRef = rooms.doc(roomCode);
       const ok = await db.runTransaction(async (tx) => {
@@ -333,8 +373,13 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     const body = schemas.join.parse(req.body);
     const lms = await loadLtiSession(body.ltiSession);
     const name = body.name?.trim() || lms?.name || '';
+    const binding = lms ? bindingOf(lms) : undefined;
     const player = await mutateAny(roomCode, (room, priv, t) =>
-      isCeo(room) ? joinCeo(room, priv as CeoPrivate, name, t, cryptoRng, lms ? bindingOf(lms) : undefined) : joinRoom(room, priv as RoomPrivate, name, t, cryptoRng, lms ? bindingOf(lms) : undefined),
+      isCeo(room)
+        ? joinCeo(room, priv as CeoPrivate, name, t, cryptoRng, binding)
+        : isMd(room)
+          ? joinMd(room, priv as MdPrivate, name, t, cryptoRng, binding)
+          : joinRoom(room, priv as RoomPrivate, name, t, cryptoRng, binding),
     );
     return { ...player, serverNow: now() };
   });
@@ -345,6 +390,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     await mutateAny(roomCode, (room, priv, t) => {
       requireHost(priv, hostToken);
       if (isCeo(room)) startCeo(room, priv as CeoPrivate, t, cryptoRng);
+      else if (isMd(room)) startMd(room, priv as MdPrivate, t, cryptoRng);
       else startGame(room, priv as RoomPrivate, templates, t, cryptoRng);
     });
     return { ok: true, serverNow: now() };
@@ -356,6 +402,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     await mutateAny(roomCode, (room, priv) => {
       requireHost(priv, hostToken);
       if (isCeo(room)) removeCeoPlayer(room, priv as CeoPrivate, playerId);
+      else if (isMd(room)) removeMdPlayer(room, priv as MdPrivate, playerId);
       else removePlayer(room as RoomDoc, priv as RoomPrivate, playerId);
     });
     return { ok: true, serverNow: now() };
@@ -393,6 +440,12 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
           ...(body.expectStatus ? { expectStatus: body.expectStatus as CeoRoomDoc['status'] } : {}),
           ...(body.expectRound !== undefined ? { expectRound: body.expectRound } : {}),
         });
+      if (isMd(room))
+        return advanceMd(room, priv as MdPrivate, t, {
+          isHost,
+          ...(body.expectStatus ? { expectStatus: body.expectStatus as MdRoomDoc['status'] } : {}),
+          ...(body.expectRound !== undefined ? { expectRound: body.expectRound } : {}),
+        });
       return advance(room as RoomDoc, priv as RoomPrivate, t, {
         isHost,
         ...(body.expectStatus ? { expectStatus: body.expectStatus as RoomDoc['status'] } : {}),
@@ -409,6 +462,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
       requireHost(priv, hostToken);
       if (room.status === 'lobby') throw new GameError('not_started', E('The game has not started.', 'Trò chơi chưa bắt đầu.'), 409);
       if (isCeo(room)) finishCeo(room, priv as CeoPrivate, t);
+      else if (isMd(room)) finishMd(room, priv as MdPrivate, t);
       else finishGame(room as RoomDoc, priv as RoomPrivate, t);
     });
     return { ok: true, serverNow: now() };
@@ -428,9 +482,11 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   app.post('/api/rooms/:code/extend', async (req) => {
     const roomCode = parseCode(req.params);
     const { hostToken } = schemas.host.parse(req.body);
-    await mutateCeo(roomCode, (room, priv) => {
+    await mutateAny(roomCode, (room, priv) => {
       requireHost(priv, hostToken);
-      extendCeo(room, 60);
+      if (isCeo(room)) extendCeo(room, 60);
+      else if (isMd(room)) extendMd(room, 60);
+      else throw wrongGame(room);
     });
     return { ok: true, serverNow: now() };
   });
@@ -446,6 +502,41 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     if (!isCeo(room)) throw wrongGame(room);
     requirePlayer(priv, body.playerId, body.playerToken);
     return { ...ceoMe(room, priv as CeoPrivate, body.playerId), serverNow: now() };
+  });
+
+  // ───────── Game 4 – Market Detective ─────────
+  app.post('/api/rooms/:code/md-buy', async (req) => {
+    const roomCode = parseCode(req.params);
+    const body = schemas.mdBuy.parse(req.body);
+    const me = await mutateMd(roomCode, (room, priv, t) => {
+      requirePlayer(priv, body.playerId, body.playerToken);
+      buyMd(room, priv, body.playerId, body.round, body.source, t);
+      return mdMe(room, priv, body.playerId);
+    });
+    return { ...me, serverNow: now() };
+  });
+
+  app.post('/api/rooms/:code/md-submit', async (req) => {
+    const roomCode = parseCode(req.params);
+    const body = schemas.mdSubmit.parse(req.body);
+    const closed = await mutateMd(roomCode, (room, priv, t) => {
+      requirePlayer(priv, body.playerId, body.playerToken);
+      return submitMd(room, priv, body.playerId, body.round, body.submission, t);
+    });
+    return { ok: true, closed, serverNow: now() };
+  });
+
+  app.post('/api/rooms/:code/md-me', async (req) => {
+    const roomCode = parseCode(req.params);
+    const body = schemas.me.parse(req.body);
+    const roomRef = rooms.doc(roomCode);
+    const [rs, ps] = await db.getAll(roomRef, roomRef.collection('private').doc('state'));
+    if (!rs?.exists || !ps?.exists) throw new GameError('no_room', E('Room not found.', 'Không tìm thấy phòng.'), 404);
+    const room = rs.data() as AnyRoom;
+    const priv = ps.data() as AnyPriv;
+    if (!isMd(room)) throw wrongGame(room);
+    requirePlayer(priv, body.playerId, body.playerToken);
+    return { ...mdMe(room, priv as MdPrivate, body.playerId), serverNow: now() };
   });
 
   return app;

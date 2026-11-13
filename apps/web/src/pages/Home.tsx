@@ -7,7 +7,7 @@ import { errOf, useLang } from '../lib/i18n';
 import { getLti, getName, setName, setSession } from '../lib/storage';
 
 /** Games already playable; the others show as "coming soon". */
-export const READY: GameId[] = ['unit-economics', 'ceo-sim'];
+export const READY: GameId[] = ['unit-economics', 'ceo-sim', 'market-detective'];
 
 export function GamePicker({ game, setGame }: { game: GameId; setGame: (g: GameId) => void }) {
   const { t, tr } = useLang();
@@ -65,6 +65,8 @@ export function Home() {
         settings:
           game === 'ceo-sim'
             ? { botLevel: level, fillBots: mode !== 'practice', decideSec: mode === 'invite' ? 360 : 0 }
+            : game === 'market-detective'
+              ? { botLevel: level, fillBots: mode !== 'practice', caseSec: mode === 'invite' ? 420 : 0 }
             : { botLevel: level, questionCount: count, fillBots: mode !== 'practice', ...(mode === 'practice' ? { autoNextSec: 0 } : {}) },
         ...(lti?.role === 'learner' ? { ltiSession: lti.session } : {}),
       });
@@ -156,6 +158,17 @@ export function Home() {
         </p>
       </section>
 
+      {game === 'market-detective' && <section className="mt-4 card text-sm leading-relaxed text-ink/80">
+        <h2 className="mb-2 text-base font-bold text-ink">{tr('Scoring', 'Cách tính điểm')}</h2>
+        <ul className="list-disc space-y-1 pl-5">
+          <li>{tr('3 cases, 100 research credits each: buy data, estimate the market, decide Launch / Pilot / Do not launch.', '3 vụ, mỗi vụ 100 điểm nghiên cứu: mua dữ liệu, ước tính thị trường, quyết định Tung / Thử nhỏ / Không tung.')}</li>
+          <li>{tr('Estimate within 10%: 50 points (0 when off by 2×). Right decision: 25 (a pilot when it was wrong: 10).', 'Ước tính sai dưới 10%: 50 điểm (sai gấp đôi: 0). Quyết định đúng: 25 (chọn thử nhỏ khi sai: 10).')}</li>
+          <li>{tr('AI report: +5 for each planted error you flag, −5 for each wrong flag.', 'Báo cáo AI: +5 mỗi lỗi cài sẵn bắt được, −5 mỗi lần đánh dấu nhầm.')}</li>
+          <li>{tr('Credits left: up to 15 – but only when your estimate is within 50%.', 'Điểm nghiên cứu còn thừa: tối đa 15 – chỉ khi ước tính sai dưới 50%.')}</li>
+          <li>{tr('Only 2 players per room can buy customer interviews. AI detectives book theirs after a minute or two.', 'Mỗi phòng chỉ 2 người mua được phỏng vấn khách hàng. Thám tử máy sẽ đặt suất sau một, hai phút.')}</li>
+          <li>{tr('Moodle grade = 70% average case score + 30% rank in the room.', 'Điểm Moodle = 70% điểm trung bình các vụ + 30% thứ hạng trong phòng.')}</li>
+        </ul>
+      </section>}
       {game === 'unit-economics' && <section className="mt-4 card text-sm leading-relaxed text-ink/80">
         <h2 className="mb-2 text-base font-bold text-ink">{tr('Scoring', 'Cách tính điểm')}</h2>
         <ul className="list-disc space-y-1 pl-5">

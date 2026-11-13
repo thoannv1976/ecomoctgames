@@ -8,6 +8,8 @@ import { answeredCount, humansOf, rankPlayers, useAutoAdvance, useNow, useRoom }
 import { errOf, useLang } from '../lib/i18n';
 import { CeoPlay } from '../ceo/CeoPlay';
 import { asCeo, isCeoRoom, useCeoAutoAdvance } from '../ceo/parts';
+import { MdPlay } from '../md/MdPlay';
+import { asMd, isMdRoom, useMdAutoAdvance } from '../md/parts';
 import { clearSession, getHint, getLti, getName, getSession, setHint, setName, setSession, type Session } from '../lib/storage';
 
 export function Play() {
@@ -19,6 +21,8 @@ export function Play() {
   useAutoAdvance(room, now, session?.hostToken);
   const isCeo = isCeoRoom(room);
   useCeoAutoAdvance(room && isCeo ? asCeo(room) : null, now, session?.hostToken);
+  const isMd = isMdRoom(room);
+  useMdAutoAdvance(room && isMd ? asMd(room) : null, now, session?.hostToken);
 
   const screenKey = room ? `${room.status}:${room.qIndex}:${(room as unknown as { round?: number }).round ?? ''}` : '';
   useEffect(() => {
@@ -46,6 +50,15 @@ export function Play() {
   if (!session?.playerId || !session.playerToken) return <JoinForm room={room} onJoined={(s) => { setSession(code, s); setSess(s); }} />;
   const me = room.players[session.playerId];
   if (!me) return null;
+  if (isMd) {
+    const m = asMd(room);
+    const st = m.standings[session.playerId];
+    return (
+      <Shell right={<span className="max-w-[40vw] truncate text-sm text-white/80">{me.name}{st ? <> · #{st.rank} · <b className="text-amber">{st.total}</b></> : null}</span>}>
+        <MdPlay room={m} session={session} now={now} />
+      </Shell>
+    );
+  }
   if (isCeo) {
     const c = asCeo(room);
     const st = c.standings[session.playerId];
@@ -98,7 +111,7 @@ function JoinForm({ room, onJoined }: { room: RoomDoc; onJoined: (s: Session) =>
           <h1 className="text-2xl font-extrabold">{room.title}</h1>
           <p className="mt-1 text-sm text-ink/60">
             {t(gameName(room.game))} · {room.order.length}/{MAX_SEATS} {tr('players', 'người')} ·{' '}
-            {room.status === 'lobby' ? tr('waiting to start', 'đang chờ bắt đầu') : room.status === 'finished' ? tr('finished', 'đã kết thúc') : isCeoRoom(room) ? tr('in play', 'đang chơi') : tr('in play (you can still join)', 'đang chơi (vẫn vào được)')}
+            {room.status === 'lobby' ? tr('waiting to start', 'đang chờ bắt đầu') : room.status === 'finished' ? tr('finished', 'đã kết thúc') : isCeoRoom(room) || isMdRoom(room) ? tr('in play', 'đang chơi') : tr('in play (you can still join)', 'đang chơi (vẫn vào được)')}
           </p>
         </div>
         {room.status === 'finished' || full ? (

@@ -1,5 +1,6 @@
 import type { AnswerInput, GameId, HintPayload, RoomSettings, RoomStatus } from '@arena/types';
 import type { CeoDecision, CeoMe, CeoSettings } from '@arena/ceo';
+import type { MdMe, MdSettings, MdSubmission, SourceId } from '@arena/md';
 
 /** Server clock offset (ms) so every device counts down to the same deadline. */
 let offset = 0;
@@ -45,7 +46,7 @@ export const api = {
   time: () => call<{ serverNow: number }>('GET', '/time'),
   ltiLaunch: (ticket: string) =>
     call<{ session: string; role: 'instructor' | 'learner'; name: string; contextTitle: string | null; graded: boolean; activity: string | null }>('POST', '/lti/launch', { ticket }),
-  createRoom: (body: { hostPlays: boolean; hostName?: string; title?: string; game?: GameId; settings?: Partial<RoomSettings> | Partial<CeoSettings>; ltiSession?: string }) =>
+  createRoom: (body: { hostPlays: boolean; hostName?: string; title?: string; game?: GameId; settings?: Partial<RoomSettings> | Partial<CeoSettings> | Partial<MdSettings>; ltiSession?: string }) =>
     call<{ code: string; hostToken: string; playerId?: string; playerToken?: string }>('POST', '/rooms', body),
   join: (code: string, name: string, ltiSession?: string) => call<{ playerId: string; playerToken: string }>('POST', `/rooms/${code}/join`, { name, ...(ltiSession ? { ltiSession } : {}) }),
   start: (code: string, hostToken: string) => call<{ ok: true }>('POST', `/rooms/${code}/start`, { hostToken }),
@@ -57,6 +58,10 @@ export const api = {
   ceoDecide: (code: string, playerId: string, playerToken: string, round: number, decision: CeoDecision) =>
     call<{ ok: true; closed: boolean }>('POST', `/rooms/${code}/ceo-decide`, { playerId, playerToken, round, decision }),
   ceoMe: (code: string, playerId: string, playerToken: string) => call<CeoMe>('POST', `/rooms/${code}/ceo-me`, { playerId, playerToken }),
+  mdBuy: (code: string, playerId: string, playerToken: string, round: number, source: SourceId) => call<MdMe>('POST', `/rooms/${code}/md-buy`, { playerId, playerToken, round, source }),
+  mdSubmit: (code: string, playerId: string, playerToken: string, round: number, submission: MdSubmission) =>
+    call<{ ok: true; closed: boolean }>('POST', `/rooms/${code}/md-submit`, { playerId, playerToken, round, submission }),
+  mdMe: (code: string, playerId: string, playerToken: string) => call<MdMe>('POST', `/rooms/${code}/md-me`, { playerId, playerToken }),
   extend: (code: string, hostToken: string) => call<{ ok: true }>('POST', `/rooms/${code}/extend`, { hostToken }),
   advance: (code: string, opts: { hostToken?: string; expectStatus?: RoomStatus | 'decide' | 'results'; expectQIndex?: number; expectRound?: number }) =>
     call<{ changed: boolean }>('POST', `/rooms/${code}/advance`, opts),
