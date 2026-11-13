@@ -7,3 +7,4 @@ export * from './bots.js';
 export * from './questions.js';
 export * from './room.js';
 export { UNIT_ECONOMICS_TEMPLATES } from './unit/templates.js';
+export * from './ceo/index.js';

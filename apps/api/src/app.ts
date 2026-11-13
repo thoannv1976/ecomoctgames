@@ -24,6 +24,26 @@ import {
   type Rng,
   type RoomDoc,
   type RoomPrivate,
+  AGENT_INVESTS,
+  AI_CHOICES,
+  CHANNELS,
+  KPIS,
+  PRICE_POS,
+  SEGMENTS,
+  SERVICES,
+  SKU_RANGES,
+  advanceCeo,
+  ceoLmsResults,
+  ceoMe,
+  createCeoRoom,
+  extendCeo,
+  finishCeo,
+  joinCeo,
+  removeCeoPlayer,
+  startCeo,
+  submitCeo,
+  type CeoPrivate,
+  type CeoRoomDoc,
 } from '@arena/engine';
 import { displayName, submitResult, verifyTicket, type LtiConfig } from './lti.js';
 
@@ -61,6 +81,31 @@ const quizSettings = z
     autoNextSec: z.number().int().min(0).max(60).optional(),
   })
   .optional();
+const ceoSettings = z
+  .object({
+    decideSec: z.number().int().min(0).max(900).optional(),
+    resultsSec: z.number().int().min(0).max(300).optional(),
+    botLevel: z.enum(['easy', 'medium', 'hard']).optional(),
+    fillBots: z.boolean().optional(),
+  })
+  .optional();
+const en = <T extends string>(list: readonly T[]) => z.enum(list as unknown as [T, ...T[]]);
+const ceoDecision = z.object({
+  price: en(PRICE_POS),
+  skus: en(SKU_RANGES),
+  segment: en(SEGMENTS),
+  service: en(SERVICES),
+  ads: z.number().min(0).max(600),
+  creators: z.number().min(0).max(600),
+  crm: z.number().min(0).max(600),
+  mix: z.object(Object.fromEntries(CHANNELS.map((c) => [c, z.number().min(0).max(100)])) as Record<string, z.ZodNumber>),
+  stock: z.number().int().min(0).max(20000),
+  shopeePromo: z.boolean().optional(),
+  ai: en(AI_CHOICES).optional(),
+  agent: z.array(en(AGENT_INVESTS)).max(4).optional(),
+  crisis: z.string().max(20).optional(),
+  predict: z.record(en(KPIS), z.enum(['up', 'down'])).optional(),
+});
 const answerInput = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('choice'), option: z.number().int().min(0).max(10) }),
   z.object({ kind: z.literal('spot'), seg: z.number().int().min(0).max(20) }),
@@ -72,7 +117,7 @@ const schemas = {
     title: z.string().max(40).optional(),
     hostPlays: z.boolean(),
     hostName: z.string().max(40).optional(),
-    game: z.enum(['unit-economics']).optional(),
+    game: z.enum(['unit-economics', 'ceo-sim']).optional(),
     settings: z.record(z.string(), z.unknown()).optional(),
     ltiSession: z.string().min(10).max(80).optional(),
   }),
@@ -88,10 +133,16 @@ const schemas = {
     expectQIndex: z.number().int().min(-1).optional(),
     expectRound: z.number().int().min(0).optional(),
   }),
+  me: z.object({ playerId: z.string().max(40), playerToken: token }),
+  ceoDecide: z.object({ playerId: z.string().max(40), playerToken: token, round: z.number().int().min(1), decision: ceoDecision }),
 };
 
-type AnyRoom = RoomDoc;
-type AnyPriv = RoomPrivate;
+type AnyRoom = RoomDoc | CeoRoomDoc;
+type AnyPriv = RoomPrivate | CeoPrivate;
+const isCeo = (r: AnyRoom): r is CeoRoomDoc => r.game === 'ceo-sim';
+const NAMES: Record<string, { en: string; vi: string }> = { 'unit-economics': { en: 'Unit Economics Showdown', vi: 'Thám tử lợi nhuận' }, 'ceo-sim': { en: 'CEO Simulator', vi: 'Mô phỏng CEO' } };
+const wrongGame = (r: AnyRoom) =>
+  new GameError('wrong_game', { en: `This room plays ${NAMES[r.game]?.en ?? r.game}.`, vi: `Phòng này là game ${NAMES[r.game]?.vi ?? r.game}.` }, 409);
 const E = (en: string, vi: string) => ({ en, vi });
 
 function sameToken(a: string | undefined, b: string | undefined): boolean {
@@ -141,12 +192,24 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
         tx.set(roomRef, room);
         tx.set(privRef, priv);
       }
-      if (!wasFinished && room.status === 'finished') toSend = lmsResults(room, priv);
+      if (!wasFinished && room.status === 'finished') toSend = isCeo(room) ? ceoLmsResults(room, priv as CeoPrivate) : lmsResults(room as RoomDoc, priv as RoomPrivate);
       return out;
     });
     if (toSend.length) await sendGrades(roomCode, toSend);
     return result;
   }
+
+  /** Quiz-only and CEO-only routes. */
+  const mutateQuiz = <T>(roomCode: string, fn: (room: RoomDoc, priv: RoomPrivate, t: number) => T) =>
+    mutateAny(roomCode, (room, priv, t) => {
+      if (isCeo(room)) throw wrongGame(room);
+      return fn(room, priv as RoomPrivate, t);
+    });
+  const mutateCeo = <T>(roomCode: string, fn: (room: CeoRoomDoc, priv: CeoPrivate, t: number) => T) =>
+    mutateAny(roomCode, (room, priv, t) => {
+      if (!isCeo(room)) throw wrongGame(room);
+      return fn(room, priv as CeoPrivate, t);
+    });
 
   /** Sends each Moodle player's result to the Hub (which queues and retries delivery to Moodle). */
   async function sendGrades(roomCode: string, list: LmsResult[]) {
@@ -228,25 +291,22 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
 
   app.post('/api/rooms', { config: { rateLimit: { max: 60, timeWindow: '1 minute' } } }, async (req) => {
     const body = schemas.create.parse(req.body);
-    const gameSettings = quizSettings.parse(body.settings);
+    const gameSettings = body.game === 'ceo-sim' ? ceoSettings.parse(body.settings) : quizSettings.parse(body.settings);
     const lms = await loadLtiSession(body.ltiSession);
     if (lms && body.hostPlays && !body.hostName?.trim()) body.hostName = lms.name;
     if (body.hostPlays && !body.hostName?.trim()) throw new GameError('bad_name', E('Please enter your name.', 'Vui lòng nhập tên.'));
     for (let attempt = 0; attempt < 6; attempt++) {
       const roomCode = randomRoomCode(cryptoRng);
       const t = now();
-      const created = createRoom(
-        {
-          code: roomCode,
-          hostPlays: body.hostPlays,
-          ...(body.title ? { title: body.title } : {}),
-          ...(body.hostName ? { hostName: body.hostName } : {}),
-          ...(gameSettings ? { settings: gameSettings as never } : {}),
-          ...(lms && body.hostPlays ? { hostLms: bindingOf(lms) } : {}),
-        },
-        t,
-        cryptoRng,
-      );
+      const common = {
+        code: roomCode,
+        hostPlays: body.hostPlays,
+        ...(body.title ? { title: body.title } : {}),
+        ...(body.hostName ? { hostName: body.hostName } : {}),
+        ...(gameSettings ? { settings: gameSettings as never } : {}),
+        ...(lms && body.hostPlays ? { hostLms: bindingOf(lms) } : {}),
+      };
+      const created = body.game === 'ceo-sim' ? createCeoRoom(common, t, cryptoRng) : createRoom(common, t, cryptoRng);
       const expireAt = new Date(t + ROOM_TTL_MS);
       const roomRef = rooms.doc(roomCode);
       const ok = await db.runTransaction(async (tx) => {
@@ -273,7 +333,9 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     const body = schemas.join.parse(req.body);
     const lms = await loadLtiSession(body.ltiSession);
     const name = body.name?.trim() || lms?.name || '';
-    const player = await mutateAny(roomCode, (room, priv, t) => joinRoom(room, priv, name, t, cryptoRng, lms ? bindingOf(lms) : undefined));
+    const player = await mutateAny(roomCode, (room, priv, t) =>
+      isCeo(room) ? joinCeo(room, priv as CeoPrivate, name, t, cryptoRng, lms ? bindingOf(lms) : undefined) : joinRoom(room, priv as RoomPrivate, name, t, cryptoRng, lms ? bindingOf(lms) : undefined),
+    );
     return { ...player, serverNow: now() };
   });
 
@@ -282,7 +344,8 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     const { hostToken } = schemas.host.parse(req.body);
     await mutateAny(roomCode, (room, priv, t) => {
       requireHost(priv, hostToken);
-      startGame(room, priv, templates, t, cryptoRng);
+      if (isCeo(room)) startCeo(room, priv as CeoPrivate, t, cryptoRng);
+      else startGame(room, priv as RoomPrivate, templates, t, cryptoRng);
     });
     return { ok: true, serverNow: now() };
   });
@@ -292,7 +355,8 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     const { hostToken, playerId } = schemas.kick.parse(req.body);
     await mutateAny(roomCode, (room, priv) => {
       requireHost(priv, hostToken);
-      removePlayer(room, priv, playerId);
+      if (isCeo(room)) removeCeoPlayer(room, priv as CeoPrivate, playerId);
+      else removePlayer(room as RoomDoc, priv as RoomPrivate, playerId);
     });
     return { ok: true, serverNow: now() };
   });
@@ -300,7 +364,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   app.post('/api/rooms/:code/answer', async (req) => {
     const roomCode = parseCode(req.params);
     const body = schemas.answer.parse(req.body);
-    const closed = await mutateAny(roomCode, (room, priv, t) => {
+    const closed = await mutateQuiz(roomCode, (room, priv, t) => {
       requirePlayer(priv, body.playerId, body.playerToken);
       return submitAnswer(room, priv, body.playerId, body.qIndex, body.input as never, t);
     });
@@ -310,7 +374,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   app.post('/api/rooms/:code/hint', async (req) => {
     const roomCode = parseCode(req.params);
     const body = schemas.hint.parse(req.body);
-    const hint = await mutateAny(roomCode, (room, priv, t) => {
+    const hint = await mutateQuiz(roomCode, (room, priv, t) => {
       requirePlayer(priv, body.playerId, body.playerToken);
       return useHint(room, priv, body.playerId, body.qIndex, t);
     });
@@ -321,13 +385,20 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   app.post('/api/rooms/:code/advance', async (req) => {
     const roomCode = parseCode(req.params);
     const body = schemas.advance.parse(req.body);
-    const changed = await mutateAny(roomCode, (room, priv, t) =>
-      advance(room, priv, t, {
-        isHost: sameToken(priv.hostToken, body.hostToken),
+    const changed = await mutateAny(roomCode, (room, priv, t) => {
+      const isHost = sameToken(priv.hostToken, body.hostToken);
+      if (isCeo(room))
+        return advanceCeo(room, priv as CeoPrivate, t, {
+          isHost,
+          ...(body.expectStatus ? { expectStatus: body.expectStatus as CeoRoomDoc['status'] } : {}),
+          ...(body.expectRound !== undefined ? { expectRound: body.expectRound } : {}),
+        });
+      return advance(room as RoomDoc, priv as RoomPrivate, t, {
+        isHost,
         ...(body.expectStatus ? { expectStatus: body.expectStatus as RoomDoc['status'] } : {}),
         ...(body.expectQIndex !== undefined ? { expectQIndex: body.expectQIndex } : {}),
-      }),
-    );
+      });
+    });
     return { changed, serverNow: now() };
   });
 
@@ -337,9 +408,44 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     await mutateAny(roomCode, (room, priv, t) => {
       requireHost(priv, hostToken);
       if (room.status === 'lobby') throw new GameError('not_started', E('The game has not started.', 'Trò chơi chưa bắt đầu.'), 409);
-      finishGame(room, priv, t);
+      if (isCeo(room)) finishCeo(room, priv as CeoPrivate, t);
+      else finishGame(room as RoomDoc, priv as RoomPrivate, t);
     });
     return { ok: true, serverNow: now() };
+  });
+
+  // ───────── Game 12 – CEO Simulator ─────────
+  app.post('/api/rooms/:code/ceo-decide', async (req) => {
+    const roomCode = parseCode(req.params);
+    const body = schemas.ceoDecide.parse(req.body);
+    const closed = await mutateCeo(roomCode, (room, priv, t) => {
+      requirePlayer(priv, body.playerId, body.playerToken);
+      return submitCeo(room, priv, body.playerId, body.round, body.decision as never, t);
+    });
+    return { ok: true, closed, serverNow: now() };
+  });
+
+  app.post('/api/rooms/:code/extend', async (req) => {
+    const roomCode = parseCode(req.params);
+    const { hostToken } = schemas.host.parse(req.body);
+    await mutateCeo(roomCode, (room, priv) => {
+      requireHost(priv, hostToken);
+      extendCeo(room, 60);
+    });
+    return { ok: true, serverNow: now() };
+  });
+
+  app.post('/api/rooms/:code/ceo-me', async (req) => {
+    const roomCode = parseCode(req.params);
+    const body = schemas.me.parse(req.body);
+    const roomRef = rooms.doc(roomCode);
+    const [rs, ps] = await db.getAll(roomRef, roomRef.collection('private').doc('state'));
+    if (!rs?.exists || !ps?.exists) throw new GameError('no_room', E('Room not found.', 'Không tìm thấy phòng.'), 404);
+    const room = rs.data() as AnyRoom;
+    const priv = ps.data() as AnyPriv;
+    if (!isCeo(room)) throw wrongGame(room);
+    requirePlayer(priv, body.playerId, body.playerToken);
+    return { ...ceoMe(room, priv as CeoPrivate, body.playerId), serverNow: now() };
   });
 
   return app;

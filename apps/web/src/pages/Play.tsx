@@ -6,6 +6,8 @@ import { AnswerArea, AnswerReview, CategoryChip, QuestionHeader } from '../compo
 import { api } from '../lib/api';
 import { answeredCount, humansOf, rankPlayers, useAutoAdvance, useNow, useRoom } from '../lib/hooks';
 import { errOf, useLang } from '../lib/i18n';
+import { CeoPlay } from '../ceo/CeoPlay';
+import { asCeo, isCeoRoom, useCeoAutoAdvance } from '../ceo/parts';
 import { clearSession, getHint, getLti, getName, getSession, setHint, setName, setSession, type Session } from '../lib/storage';
 
 export function Play() {
@@ -15,8 +17,10 @@ export function Play() {
   const { room, error } = useRoom(code);
   const now = useNow();
   useAutoAdvance(room, now, session?.hostToken);
+  const isCeo = isCeoRoom(room);
+  useCeoAutoAdvance(room && isCeo ? asCeo(room) : null, now, session?.hostToken);
 
-  const screenKey = room ? `${room.status}:${room.qIndex}` : '';
+  const screenKey = room ? `${room.status}:${room.qIndex}:${(room as unknown as { round?: number }).round ?? ''}` : '';
   useEffect(() => {
     if (screenKey) window.scrollTo({ top: 0 });
   }, [screenKey]);
@@ -42,6 +46,15 @@ export function Play() {
   if (!session?.playerId || !session.playerToken) return <JoinForm room={room} onJoined={(s) => { setSession(code, s); setSess(s); }} />;
   const me = room.players[session.playerId];
   if (!me) return null;
+  if (isCeo) {
+    const c = asCeo(room);
+    const st = c.standings[session.playerId];
+    return (
+      <Shell right={<span className="max-w-[40vw] truncate text-sm text-white/80">{me.name}{st ? <> · #{st.rank}</> : null}</span>}>
+        <CeoPlay room={c} session={session} now={now} />
+      </Shell>
+    );
+  }
   return (
     <Shell right={<span className="max-w-[40vw] truncate text-sm text-white/80">{me.name} · <b className="text-amber">{me.score}</b></span>}>
       <ErrorNote err={error ? { en: 'Lost connection to the room. Retrying…', vi: 'Mất kết nối tới phòng. Đang thử lại…' } : null} />
@@ -85,7 +98,7 @@ function JoinForm({ room, onJoined }: { room: RoomDoc; onJoined: (s: Session) =>
           <h1 className="text-2xl font-extrabold">{room.title}</h1>
           <p className="mt-1 text-sm text-ink/60">
             {t(gameName(room.game))} · {room.order.length}/{MAX_SEATS} {tr('players', 'người')} ·{' '}
-            {room.status === 'lobby' ? tr('waiting to start', 'đang chờ bắt đầu') : room.status === 'finished' ? tr('finished', 'đã kết thúc') : tr('in play (you can still join)', 'đang chơi (vẫn vào được)')}
+            {room.status === 'lobby' ? tr('waiting to start', 'đang chờ bắt đầu') : room.status === 'finished' ? tr('finished', 'đã kết thúc') : isCeoRoom(room) ? tr('in play', 'đang chơi') : tr('in play (you can still join)', 'đang chơi (vẫn vào được)')}
           </p>
         </div>
         {room.status === 'finished' || full ? (

@@ -6,7 +6,7 @@ Every text exists in **English and Vietnamese**; each player switches with the E
 | Game | Chapter | Status |
 |---|---|---|
 | 🧮 Unit Economics Showdown – *Thám tử lợi nhuận* | 9 | live |
-| 🏢 CEO Simulator – *Mô phỏng CEO* | 12 | batch 1, next |
+| 🏢 CEO Simulator – *Mô phỏng CEO* | 12 | live |
 | 🔎 Market Detective – *Thám tử thị trường* | 4 | batch 1, next |
 
 Plan: [docs/ke-hoach-dot-1.md](docs/ke-hoach-dot-1.md).

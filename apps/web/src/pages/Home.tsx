@@ -7,7 +7,7 @@ import { errOf, useLang } from '../lib/i18n';
 import { getLti, getName, setName, setSession } from '../lib/storage';
 
 /** Games already playable; the others show as "coming soon". */
-export const READY: GameId[] = ['unit-economics'];
+export const READY: GameId[] = ['unit-economics', 'ceo-sim'];
 
 export function GamePicker({ game, setGame }: { game: GameId; setGame: (g: GameId) => void }) {
   const { t, tr } = useLang();
@@ -62,7 +62,10 @@ export function Home() {
         hostPlays: true,
         hostName: n,
         game,
-        settings: { botLevel: level, questionCount: count, fillBots: mode !== 'practice', ...(mode === 'practice' ? { autoNextSec: 0 } : {}) },
+        settings:
+          game === 'ceo-sim'
+            ? { botLevel: level, fillBots: mode !== 'practice', decideSec: mode === 'invite' ? 360 : 0 }
+            : { botLevel: level, questionCount: count, fillBots: mode !== 'practice', ...(mode === 'practice' ? { autoNextSec: 0 } : {}) },
         ...(lti?.role === 'learner' ? { ltiSession: lti.session } : {}),
       });
       setSession(r.code, { playerId: r.playerId!, playerToken: r.playerToken!, hostToken: r.hostToken });
@@ -125,7 +128,7 @@ export function Home() {
               ))}
             </div>
           </div>
-          <div>
+          {game === 'unit-economics' && <div>
             <span className="label">{tr('Questions', 'Số câu')}</span>
             <div className="grid grid-cols-3 gap-1">
               {[10, 15, 20].map((n) => (
@@ -134,7 +137,7 @@ export function Home() {
                 </button>
               ))}
             </div>
-          </div>
+          </div>}
         </div>
         <ErrorNote err={error} />
         <div className="grid gap-2 sm:grid-cols-3">
@@ -153,7 +156,7 @@ export function Home() {
         </p>
       </section>
 
-      <section className="mt-4 card text-sm leading-relaxed text-ink/80">
+      {game === 'unit-economics' && <section className="mt-4 card text-sm leading-relaxed text-ink/80">
         <h2 className="mb-2 text-base font-bold text-ink">{tr('Scoring', 'Cách tính điểm')}</h2>
         <ul className="list-disc space-y-1 pl-5">
           <li>{tr('Right: up to 1,000 points – faster is better (500 at the buzzer).', 'Đúng: tối đa 1.000 điểm, càng nhanh càng cao (chậm nhất còn 500).')}</li>
@@ -163,7 +166,7 @@ export function Home() {
           <li>{tr('🔍 Verify (2 per game): a hint, but the question is worth half.', '🔍 Kiểm chứng (2 lượt/trận): có gợi ý, nhưng câu đó chỉ còn một nửa điểm.')}</li>
           <li>{tr('Moodle grade = share of questions answered fully right.', 'Điểm Moodle = tỷ lệ câu trả lời đúng hoàn toàn.')}</li>
         </ul>
-      </section>
+      </section>}
     </Shell>
   );
 }

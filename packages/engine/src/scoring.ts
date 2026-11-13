@@ -49,3 +49,9 @@ export function computePoints(p: PointsInput): number {
   const hint = p.hint ? HINT_FACTOR : 1;
   return Math.round(BASE_POINTS * p.fraction * speedFactor(p.elapsedMs, p.limitMs) * hint * streak);
 }
+
+/** Moodle grade 0..100 for the simulation games: 70% absolute scorecard + 30% rank in the room. */
+export function gradeOf(scorecardTotal: number, rank: number, players: number): number {
+  const rankScore = players > 1 ? ((players - rank) / (players - 1)) * 100 : 100;
+  return Math.round((0.7 * scorecardTotal + 0.3 * rankScore) * 10) / 10;
+}

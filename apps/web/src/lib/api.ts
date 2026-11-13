@@ -1,4 +1,5 @@
 import type { AnswerInput, GameId, HintPayload, RoomSettings, RoomStatus } from '@arena/types';
+import type { CeoDecision, CeoMe, CeoSettings } from '@arena/ceo';
 
 /** Server clock offset (ms) so every device counts down to the same deadline. */
 let offset = 0;
@@ -44,7 +45,7 @@ export const api = {
   time: () => call<{ serverNow: number }>('GET', '/time'),
   ltiLaunch: (ticket: string) =>
     call<{ session: string; role: 'instructor' | 'learner'; name: string; contextTitle: string | null; graded: boolean; activity: string | null }>('POST', '/lti/launch', { ticket }),
-  createRoom: (body: { hostPlays: boolean; hostName?: string; title?: string; game?: GameId; settings?: Partial<RoomSettings>; ltiSession?: string }) =>
+  createRoom: (body: { hostPlays: boolean; hostName?: string; title?: string; game?: GameId; settings?: Partial<RoomSettings> | Partial<CeoSettings>; ltiSession?: string }) =>
     call<{ code: string; hostToken: string; playerId?: string; playerToken?: string }>('POST', '/rooms', body),
   join: (code: string, name: string, ltiSession?: string) => call<{ playerId: string; playerToken: string }>('POST', `/rooms/${code}/join`, { name, ...(ltiSession ? { ltiSession } : {}) }),
   start: (code: string, hostToken: string) => call<{ ok: true }>('POST', `/rooms/${code}/start`, { hostToken }),
@@ -53,6 +54,10 @@ export const api = {
   answer: (code: string, playerId: string, playerToken: string, qIndex: number, input: AnswerInput) =>
     call<{ ok: true; closed: boolean }>('POST', `/rooms/${code}/answer`, { playerId, playerToken, qIndex, input }),
   hint: (code: string, playerId: string, playerToken: string, qIndex: number) => call<{ hint: HintPayload }>('POST', `/rooms/${code}/hint`, { playerId, playerToken, qIndex }),
+  ceoDecide: (code: string, playerId: string, playerToken: string, round: number, decision: CeoDecision) =>
+    call<{ ok: true; closed: boolean }>('POST', `/rooms/${code}/ceo-decide`, { playerId, playerToken, round, decision }),
+  ceoMe: (code: string, playerId: string, playerToken: string) => call<CeoMe>('POST', `/rooms/${code}/ceo-me`, { playerId, playerToken }),
+  extend: (code: string, hostToken: string) => call<{ ok: true }>('POST', `/rooms/${code}/extend`, { hostToken }),
   advance: (code: string, opts: { hostToken?: string; expectStatus?: RoomStatus | 'decide' | 'results'; expectQIndex?: number; expectRound?: number }) =>
     call<{ changed: boolean }>('POST', `/rooms/${code}/advance`, opts),
 };

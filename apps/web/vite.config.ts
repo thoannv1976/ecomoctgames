@@ -7,9 +7,12 @@ import tailwindcss from '@tailwindcss/vite';
 const typesAlias = { find: /^@arena\/types$/, replacement: fileURLToPath(new URL('../../packages/engine/src/types.ts', import.meta.url)) };
 
 
+// Game 12 public types (the market model stays on the server).
+const ceoAlias = { find: /^@arena\/ceo$/, replacement: fileURLToPath(new URL('../../packages/engine/src/ceo/types.ts', import.meta.url)) };
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  resolve: { alias: [typesAlias] },
+  resolve: { alias: [typesAlias, ceoAlias] },
   server: {
     port: 5174,
     strictPort: true,

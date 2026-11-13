@@ -7,6 +7,9 @@ import { api } from '../lib/api';
 import { answeredCount, rankPlayers, useAutoAdvance, useNow, useRoom } from '../lib/hooks';
 import { LangToggle, errOf, useLang } from '../lib/i18n';
 import { getHostedRooms, getSession } from '../lib/storage';
+import { CeoScreen } from '../ceo/CeoScreen';
+import { asCeo, isCeoRoom, useCeoAutoAdvance } from '../ceo/parts';
+import { ROUNDS, type CeoRoomDoc } from '@arena/ceo';
 
 /** Projector screen for one room. Host controls appear when this browser created the room. */
 export function Screen() {
@@ -16,6 +19,8 @@ export function Screen() {
   const now = useNow();
   const hostToken = getHostedRooms().find((r) => r.code === code)?.hostToken ?? getSession(code)?.hostToken;
   useAutoAdvance(room, now, hostToken);
+  const isCeo = isCeoRoom(room);
+  useCeoAutoAdvance(room && isCeo ? asCeo(room) : null, now, hostToken);
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<T | null>(null);
 
@@ -47,11 +52,13 @@ export function Screen() {
       </header>
       <main className="mx-auto max-w-6xl space-y-5 p-6">
         <ErrorNote err={error ? { en: 'Connection lost, retrying…', vi: 'Mất kết nối, đang thử lại…' } : actionError} />
-        {room.status === 'lobby' && <LobbyScreen room={room} />}
-        {room.status === 'question' && <QuestionScreen room={room} now={now} />}
-        {room.status === 'reveal' && <RevealScreen room={room} now={now} />}
-        {room.status === 'finished' && <FinalScreen room={room} />}
-        {hostToken && (
+        {isCeo && <CeoScreen room={asCeo(room)} now={now} />}
+        {isCeo && hostToken && <CeoControls room={asCeo(room)} hostToken={hostToken} busy={busy} run={run} />}
+        {!isCeo && room.status === 'lobby' && <LobbyScreen room={room} />}
+        {!isCeo && room.status === 'question' && <QuestionScreen room={room} now={now} />}
+        {!isCeo && room.status === 'reveal' && <RevealScreen room={room} now={now} />}
+        {!isCeo && room.status === 'finished' && <FinalScreen room={room} />}
+        {!isCeo && hostToken && (
           <div className="flex flex-wrap justify-center gap-3 pt-2">
             {room.status === 'lobby' && (
               <button type="button" className="btn-primary px-8 py-3 text-xl" disabled={busy || !room.order.length} onClick={() => run(() => api.start(room.code, hostToken))}>
@@ -71,6 +78,32 @@ export function Screen() {
           </div>
         )}
       </main>
+    </div>
+  );
+}
+
+function CeoControls({ room, hostToken, busy, run }: { room: CeoRoomDoc; hostToken: string; busy: boolean; run: (fn: () => Promise<unknown>) => Promise<void> }) {
+  const { tr } = useLang();
+  return (
+    <div className="flex flex-wrap justify-center gap-3 pt-2">
+      {room.status === 'lobby' && (
+        <button type="button" className="btn-primary px-8 py-3 text-xl" disabled={busy || !room.order.length} onClick={() => run(() => api.start(room.code, hostToken))}>
+          ▶ {tr('Start', 'Bắt đầu')}
+        </button>
+      )}
+      {room.status === 'decide' && (
+        <>
+          {room.deadline !== null && <button type="button" className="btn-ghost" disabled={busy} onClick={() => run(() => api.extend(room.code, hostToken))}>{tr('+1 min', '+1 phút')}</button>}
+          <button type="button" className="btn-dark" disabled={busy} onClick={() => window.confirm(tr('Close the quarter now? Missing plans reuse last quarter.', 'Chốt quý ngay? Ai chưa nộp sẽ dùng lại lựa chọn quý trước.')) && run(() => api.advance(room.code, { hostToken, expectStatus: 'decide', expectRound: room.round }))}>
+            {tr('Close quarter', 'Chốt quý')}
+          </button>
+        </>
+      )}
+      {room.status === 'results' && (
+        <button type="button" className="btn-primary px-8 py-3 text-xl" disabled={busy} onClick={() => run(() => api.advance(room.code, { hostToken, expectStatus: 'results', expectRound: room.round }))}>
+          {room.round + 1 === ROUNDS ? tr('Quarter 6: crisis cards →', 'Quý 6: thẻ khủng hoảng →') : tr(`Quarter ${room.round + 1} →`, `Sang quý ${room.round + 1} →`)}
+        </button>
+      )}
     </div>
   );
 }
