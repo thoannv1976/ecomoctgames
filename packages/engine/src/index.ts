@@ -9,3 +9,5 @@ export * from './room.js';
 export { UNIT_ECONOMICS_TEMPLATES } from './unit/templates.js';
 export * from './ceo/index.js';
 export * from './md/index.js';
+export * from './rs/index.js';
+export * from './pw/index.js';

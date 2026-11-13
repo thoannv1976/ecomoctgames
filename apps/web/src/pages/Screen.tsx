@@ -12,6 +12,8 @@ import { asCeo, isCeoRoom, useCeoAutoAdvance } from '../ceo/parts';
 import { ROUNDS, type CeoRoomDoc } from '@arena/ceo';
 import { MdControls, MdScreen } from '../md/MdScreen';
 import { asMd, isMdRoom, useMdAutoAdvance } from '../md/parts';
+import { RsControls, RsScreen } from '../rs/RsScreen';
+import { asRs, isRsRoom, useRsAutoAdvance } from '../rs/parts';
 
 /** Projector screen for one room. Host controls appear when this browser created the room. */
 export function Screen() {
@@ -25,6 +27,8 @@ export function Screen() {
   useCeoAutoAdvance(room && isCeo ? asCeo(room) : null, now, hostToken);
   const isMd = isMdRoom(room);
   useMdAutoAdvance(room && isMd ? asMd(room) : null, now, hostToken);
+  const isRs = isRsRoom(room);
+  useRsAutoAdvance(room && isRs ? asRs(room) : null, now, hostToken);
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<T | null>(null);
 
@@ -58,13 +62,15 @@ export function Screen() {
         <ErrorNote err={error ? { en: 'Connection lost, retrying…', vi: 'Mất kết nối, đang thử lại…' } : actionError} />
         {isCeo && <CeoScreen room={asCeo(room)} now={now} />}
         {isCeo && hostToken && <CeoControls room={asCeo(room)} hostToken={hostToken} busy={busy} run={run} />}
+        {isRs && <RsScreen room={asRs(room)} now={now} />}
+        {isRs && hostToken && <RsControls room={asRs(room)} hostToken={hostToken} busy={busy} run={run} />}
         {isMd && <MdScreen room={asMd(room)} now={now} />}
         {isMd && hostToken && <MdControls room={asMd(room)} hostToken={hostToken} busy={busy} run={run} />}
-        {!isCeo && !isMd && room.status === 'lobby' && <LobbyScreen room={room} />}
-        {!isCeo && !isMd && room.status === 'question' && <QuestionScreen room={room} now={now} />}
-        {!isCeo && !isMd && room.status === 'reveal' && <RevealScreen room={room} now={now} />}
-        {!isCeo && !isMd && room.status === 'finished' && <FinalScreen room={room} />}
-        {!isCeo && !isMd && hostToken && (
+        {!isCeo && !isMd && !isRs && room.status === 'lobby' && <LobbyScreen room={room} />}
+        {!isCeo && !isMd && !isRs && room.status === 'question' && <QuestionScreen room={room} now={now} />}
+        {!isCeo && !isMd && !isRs && room.status === 'reveal' && <RevealScreen room={room} now={now} />}
+        {!isCeo && !isMd && !isRs && room.status === 'finished' && <FinalScreen room={room} />}
+        {!isCeo && !isMd && !isRs && hostToken && (
           <div className="flex flex-wrap justify-center gap-3 pt-2">
             {room.status === 'lobby' && (
               <button type="button" className="btn-primary px-8 py-3 text-xl" disabled={busy || !room.order.length} onClick={() => run(() => api.start(room.code, hostToken))}>

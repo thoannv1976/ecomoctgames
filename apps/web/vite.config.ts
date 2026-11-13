@@ -13,9 +13,13 @@ const ceoAlias = { find: /^@arena\/ceo$/, replacement: fileURLToPath(new URL('..
 // Game 4 public types (cases, truths and source biases stay on the server).
 const mdAlias = { find: /^@arena\/md$/, replacement: fileURLToPath(new URL('../../packages/engine/src/md/types.ts', import.meta.url)) };
 
+// Round-sim framework and Game 2 public types (hidden models stay on the server).
+const rsAlias = { find: /^@arena\/rs$/, replacement: fileURLToPath(new URL('../../packages/engine/src/rs/types.ts', import.meta.url)) };
+const pwAlias = { find: /^@arena\/pw$/, replacement: fileURLToPath(new URL('../../packages/engine/src/pw/types.ts', import.meta.url)) };
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  resolve: { alias: [typesAlias, ceoAlias, mdAlias] },
+  resolve: { alias: [typesAlias, ceoAlias, mdAlias, rsAlias, pwAlias] },
   server: {
     port: 5174,
     strictPort: true,

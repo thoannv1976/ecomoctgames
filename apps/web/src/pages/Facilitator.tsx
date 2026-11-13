@@ -10,6 +10,8 @@ import { GamePicker, READY } from './Home';
 import { asCeo, isCeoRoom, rankedIds as ceoRanked, useCeoAutoAdvance } from '../ceo/parts';
 import { ROUNDS } from '@arena/ceo';
 import { asMd, isMdRoom, rankedIds as mdRanked, useMdAutoAdvance } from '../md/parts';
+import { asRs, isRsRoom, rankedIds as rsRanked, useRsAutoAdvance } from '../rs/parts';
+import { rsWebOf } from '../rs/registry';
 
 export function Facilitator() {
   const { t, tr } = useLang();
@@ -42,7 +44,7 @@ export function Facilitator() {
       for (let i = 0; i < n; i++) {
         const name = title ?? `${prefix.trim() || 'Room'} ${start + i}`;
         const r =
-          game === 'ceo-sim'
+          game === 'ceo-sim' || rsWebOf(game)
             ? await api.createRoom({ game, hostPlays: false, title: name, settings: { decideSec: decideMin * 60, resultsSec, botLevel: level, fillBots: title ? false : fillBots } })
             : game === 'market-detective'
               ? await api.createRoom({ game, hostPlays: false, title: name, settings: { caseSec: caseMin * 60, resultsSec, botLevel: level, fillBots: title ? false : fillBots } })
@@ -64,7 +66,7 @@ export function Facilitator() {
   });
   // Class-wide board: every student in every room, by points.
   const board = live
-    .filter((room) => !isCeoRoom(room) && !isMdRoom(room))
+    .filter((room) => !isCeoRoom(room) && !isMdRoom(room) && !isRsRoom(room))
     .flatMap((room) => room.order.map((id) => ({ room, p: room.players[id]! })))
     .filter((x) => x.p && !x.p.bot && x.room.status !== 'lobby')
     .sort((a, b) => b.p.score - a.p.score || b.p.correct - a.p.correct);
@@ -111,10 +113,10 @@ export function Facilitator() {
                 </select>
               </div>
             </>
-          ) : game === 'ceo-sim' ? (
+          ) : game === 'ceo-sim' || rsWebOf(game) ? (
             <>
               <div>
-                <label className="label" htmlFor="dm">{tr('Minutes per quarter', 'Số phút mỗi quý')}</label>
+                <label className="label" htmlFor="dm">{tr(`Minutes per ${(rsWebOf(game)?.roundWord.en ?? 'quarter').toLowerCase()}`, `Số phút mỗi ${(rsWebOf(game)?.roundWord.vi ?? 'quý').toLowerCase()}`)}</label>
                 <select id="dm" className="input" value={decideMin} onChange={(e) => setDecideMin(Number(e.target.value))}>
                   {[4, 5, 6, 8, 10].map((n) => <option key={n} value={n}>{n}</option>)}
                 </select>
@@ -182,7 +184,7 @@ export function Facilitator() {
       {rooms.length > 0 && (
         <div className="my-4 flex flex-wrap items-center gap-2">
           <button type="button" className="btn-dark" disabled={!waiting.length} onClick={startAll}>▶ {tr(`Start ${waiting.length} waiting room(s)`, `Bắt đầu ${waiting.length} phòng đang chờ`)}</button>
-          <button type="button" className="btn-ghost" disabled={!live.length} onClick={() => downloadText(`ecom-arena-results-${new Date().toISOString().slice(0, 10)}.csv`, resultsCsv(live.filter((r) => !isCeoRoom(r) && !isMdRoom(r))))}>
+          <button type="button" className="btn-ghost" disabled={!live.length} onClick={() => downloadText(`ecom-arena-results-${new Date().toISOString().slice(0, 10)}.csv`, resultsCsv(live.filter((r) => !isCeoRoom(r) && !isMdRoom(r) && !isRsRoom(r))))}>
             ⬇ {tr('Export results (Excel/CSV)', 'Xuất kết quả (Excel/CSV)')}
           </button>
           <button type="button" className="btn-ghost text-bad" onClick={() => window.confirm(tr('Remove all rooms from this list? (Rooms stay for 3 days.)', 'Bỏ tất cả phòng khỏi danh sách này? (Phòng vẫn tồn tại 3 ngày.)')) && setRooms([])}>
@@ -227,6 +229,8 @@ function RoomCard({ hosted, onSnapshot, onRemove }: { hosted: HostedRoom; onSnap
   useCeoAutoAdvance(room && isCeo ? asCeo(room) : null, now, hosted.hostToken);
   const isMd = isMdRoom(room);
   useMdAutoAdvance(room && isMd ? asMd(room) : null, now, hosted.hostToken);
+  const isRs = isRsRoom(room);
+  useRsAutoAdvance(room && isRs ? asRs(room) : null, now, hosted.hostToken);
   const [error, setError] = useState<T | null>(null);
   useEffect(() => {
     if (room) onSnapshot(room);
@@ -250,6 +254,46 @@ function RoomCard({ hosted, onSnapshot, onRemove }: { hosted: HostedRoom; onSnap
       </div>
     );
   const humans = humansOf(room).length;
+  if (isRs) {
+    const c = asRs(room);
+    const web = rsWebOf(c.game);
+    const word = web?.roundWord ?? { en: 'Round', vi: 'Vòng' };
+    return (
+      <div className="card space-y-3">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <p className="font-bold">{c.title} <span className="text-xs font-normal text-ink/50">· {web?.tag ?? c.game}</span></p>
+            <p className="text-3xl font-extrabold tracking-[0.2em]">{c.code}</p>
+          </div>
+          <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${c.status === 'lobby' ? 'bg-amber/25' : c.status === 'finished' ? 'bg-ink/10' : 'bg-ok/15 text-ok'}`}>
+            {c.status === 'lobby' ? tr('Waiting', 'Đang chờ') : c.status === 'finished' ? tr('Finished', 'Đã kết thúc') : `${t(word)} ${c.round}/${c.rounds} · ${c.status === 'decide' ? tr('deciding', 'quyết định') : tr('results', 'kết quả')}`}
+          </span>
+        </div>
+        <p className="text-sm text-ink/60">👥 {humans} {tr('students', 'sinh viên')} · {c.settings.decideSec ? tr(`${Math.round(c.settings.decideSec / 60)} min/${word.en.toLowerCase()}`, `${Math.round(c.settings.decideSec / 60)} phút/${word.vi.toLowerCase()}`) : tr('no limit', 'không giới hạn')}</p>
+        {c.status === 'lobby' ? (
+          <p className="min-h-[3rem] text-sm">{c.order.map((id) => c.players[id]?.name).join(', ') || <span className="text-ink/40">{tr('Nobody yet…', 'Chưa có ai vào…')}</span>}</p>
+        ) : (
+          <ol className="min-h-[3rem] space-y-0.5 text-sm">
+            {rsRanked(c).slice(0, 3).map((id) => (
+              <li key={id} className="flex justify-between"><span className="truncate">{c.standings[id]?.rank ?? '–'}. {c.players[id]?.bot ? '🤖 ' : ''}{c.players[id]?.name}</span><b className="tabular-nums">{c.standings[id]?.score.toFixed(1)}</b></li>
+            ))}
+            {c.status === 'decide' && <li className="text-ink/60">{tr('Submitted', 'Đã nộp')}: {c.order.filter((id) => c.players[id]?.bot || c.submitted[id]).length}/{c.order.length}</li>}
+          </ol>
+        )}
+        <ErrorNote err={error} />
+        <div className="flex flex-wrap gap-2">
+          {c.status === 'lobby' && <button type="button" className="btn-primary px-3 py-1.5 text-sm" disabled={!humans} onClick={() => run(() => api.start(c.code, hosted.hostToken))}>▶ {tr('Start', 'Bắt đầu')}</button>}
+          {c.status === 'decide' && c.deadline !== null && <button type="button" className="btn-ghost px-3 py-1.5 text-sm" onClick={() => run(() => api.extend(c.code, hosted.hostToken))}>{tr('+1 min', '+1 phút')}</button>}
+          {c.status === 'decide' && <button type="button" className="btn-ghost px-3 py-1.5 text-sm" onClick={() => window.confirm(tr('Close this round now?', 'Chốt vòng này ngay?')) && run(() => api.advance(c.code, { hostToken: hosted.hostToken, expectStatus: 'decide', expectRound: c.round }))}>{tr(`Close ${word.en.toLowerCase()}`, `Chốt ${word.vi.toLowerCase()}`)}</button>}
+          {c.status === 'results' && <button type="button" className="btn-primary px-3 py-1.5 text-sm" onClick={() => run(() => api.advance(c.code, { hostToken: hosted.hostToken, expectStatus: 'results', expectRound: c.round }))}>{tr(`Next ${word.en.toLowerCase()} →`, `${word.vi} tiếp →`)}</button>}
+          <a href={`/gv/${c.code}`} target="_blank" rel="noreferrer" className="btn-dark px-3 py-1.5 text-sm">🖥 {tr('Projector', 'Màn hình chiếu')}</a>
+          {(c.status === 'decide' || c.status === 'results') && <button type="button" className="btn-ghost px-3 py-1.5 text-sm" onClick={() => window.confirm(tr(`End ${c.title} now?`, `Kết thúc sớm ${c.title}?`)) && run(() => api.end(c.code, hosted.hostToken))}>{tr('End', 'Kết thúc')}</button>}
+          <button type="button" className="btn-ghost px-3 py-1.5 text-sm" onClick={() => void navigator.clipboard?.writeText(joinUrl(c.code))}>📋 Link</button>
+          {c.status === 'finished' && <button type="button" className="btn-ghost px-3 py-1.5 text-sm" onClick={onRemove}>{tr('Remove from list', 'Bỏ khỏi danh sách')}</button>}
+        </div>
+      </div>
+    );
+  }
   if (isMd) {
     const c = asMd(room);
     return (

@@ -1,0 +1,16 @@
+// Server-side registry of the round-sim games (hidden models included – never import from the browser).
+import { GameError } from '../room.js';
+import { PLATFORM_WARS } from '../pw/game.js';
+import type { RsGame } from './room.js';
+import type { RsGameId } from './types.js';
+
+export const RS_GAMES: Partial<Record<RsGameId, RsGame>> = {
+  'platform-wars': PLATFORM_WARS,
+};
+
+export function rsGame(id: string): RsGame {
+  const g = RS_GAMES[id as RsGameId];
+  if (!g) throw new GameError('no_game', { en: 'This game is not available yet.', vi: 'Game này chưa có.' }, 404);
+  return g;
+}
+export const READY_RS_GAMES = Object.keys(RS_GAMES) as RsGameId[];

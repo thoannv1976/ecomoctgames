@@ -9,7 +9,7 @@ export interface T {
 }
 export const tx = (en: string, vi: string): T => ({ en, vi });
 
-export type GameId = 'unit-economics' | 'ceo-sim' | 'market-detective';
+export type GameId = 'unit-economics' | 'ceo-sim' | 'market-detective' | 'platform-wars';
 
 export interface GameInfo {
   id: GameId;
@@ -53,6 +53,17 @@ export const GAMES: Record<GameId, GameInfo> = {
       'Mua dữ liệu chất lượng không đều, đối chiếu, ước tính quy mô thị trường, bắt lỗi báo cáo AI và quyết định: tung hay không?',
     ),
     minutes: tx('20–25 min', '20–25 phút'),
+  },
+  'platform-wars': {
+    id: 'platform-wars',
+    chapter: 2,
+    icon: '🌐',
+    name: tx('Platform Wars', 'Chiến tranh nền tảng'),
+    short: tx(
+      'Run one of six marketplaces in the same city: subsidise the right side, set the take rate, fight counterfeits and leakage – GMV is not profit.',
+      'Điều hành một trong sáu sàn cùng thành phố: trợ giá đúng phía, đặt phí sàn, chống hàng giả và rò rỉ giao dịch – GMV không phải lợi nhuận.',
+    ),
+    minutes: tx('30–35 min', '30–35 phút'),
   },
 };
 

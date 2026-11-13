@@ -114,8 +114,8 @@ describe('Market Detective room', () => {
     const rng = seededRng('room2');
     const { room, priv } = createMdRoom({ code: 'MDEND', hostPlays: true, hostName: 'Ha', settings: { caseSec: 60, botLevel: 'hard' } }, 0, rng);
     startMd(room, priv, 10, rng);
-    expect(advanceMd(room, priv, 30_000, {})).toBe(false);
-    expect(advanceMd(room, priv, 60_100, {})).toBe(true);
+    expect(advanceMd(room, priv, 30_000, { isHost: false })).toBe(false);
+    expect(advanceMd(room, priv, 60_100, { isHost: false })).toBe(true);
     expect(room.status).toBe('results');
     expect(room.standings[room.hostPlayerId!]!.defaulted).toBe(true);
     finishMd(room, priv, 70_000);
