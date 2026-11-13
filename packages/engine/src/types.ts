@@ -9,7 +9,7 @@ export interface T {
 }
 export const tx = (en: string, vi: string): T => ({ en, vi });
 
-export type GameId = 'unit-economics' | 'ceo-sim' | 'market-detective' | 'platform-wars';
+export type GameId = 'unit-economics' | 'ceo-sim' | 'market-detective' | 'platform-wars' | 'cro-battle';
 
 export interface GameInfo {
   id: GameId;
@@ -64,6 +64,17 @@ export const GAMES: Record<GameId, GameInfo> = {
       'Điều hành một trong sáu sàn cùng thành phố: trợ giá đúng phía, đặt phí sàn, chống hàng giả và rò rỉ giao dịch – GMV không phải lợi nhuận.',
     ),
     minutes: tx('30–35 min', '30–35 phút'),
+  },
+  'cro-battle': {
+    id: 'cro-battle',
+    chapter: 6,
+    icon: '🧪',
+    name: tx('CRO Battle', 'Đấu trường A/B'),
+    short: tx(
+      'Six identical stores at 1.8% conversion. Run A/B tests, beat peeking, novelty and tiny samples – only the TRUE conversion rate counts, revealed at the end.',
+      'Sáu cửa hàng giống hệt nhau, chuyển đổi 1,8%. Chạy A/B test, tránh bẫy xem trộm, hiệu ứng mới lạ và mẫu nhỏ – chỉ tỷ lệ chuyển đổi THẬT mới tính, công bố lúc cuối.',
+    ),
+    minutes: tx('25 min', '25 phút'),
   },
 };
 

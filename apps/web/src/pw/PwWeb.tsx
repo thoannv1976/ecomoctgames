@@ -238,5 +238,12 @@ export const PW_WEB: RsWeb<PwDecision, PwReport, PwView> = {
   badges: PW_BADGES,
   archetypes: PW_ARCHETYPE_INFO,
   debrief: PW_DEBRIEF,
+  scoring: [
+    ['6 quarters, 6 marketplaces in one city, VND 30 bn each. Buyers follow sellers and sellers follow buyers.', '6 quý, 6 sàn trong một thành phố, mỗi sàn 30 tỷ đồng. Người mua theo người bán, người bán theo người mua.'],
+    ['Scorecard: cumulative profit 45 + GMV share 25 (worth less if bought with losses) + platform health 30.', 'Thẻ mục tiêu: lợi nhuận lũy kế 45 + thị phần GMV 25 (giảm giá trị nếu mua bằng lỗ) + sức khỏe nền tảng 30.'],
+    ['Health falls with counterfeits (too little trust & safety), leakage (take rate too high) and a seller cost above 20%.', 'Sức khỏe giảm khi có hàng giả (chi an toàn – tin cậy quá ít), rò rỉ giao dịch (phí sàn quá cao) và chi phí người bán trên 20%.'],
+    ['Out of cash: the bank blocks your subsidies.', 'Hết tiền mặt: ngân hàng chặn trợ giá.'],
+    ['Moodle grade = 70% scorecard + 30% rank in the room.', 'Điểm Moodle = 70% thẻ mục tiêu + 30% thứ hạng trong phòng.'],
+  ],
   source: tx('Textbook Chapter 2, Sections 6, 9–13 (take rate, network effects, chicken-and-egg, multi-homing, governance)', 'Giáo trình Chương 2, mục 6, 9–13 (phí sàn, hiệu ứng mạng, con gà – quả trứng, multi-homing, quản trị nền tảng)'),
 };

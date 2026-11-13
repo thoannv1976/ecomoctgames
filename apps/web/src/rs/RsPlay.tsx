@@ -7,7 +7,7 @@ import { ErrorNote, Qr, joinUrl } from '../components/common';
 import { api } from '../lib/api';
 import { errOf, useLang } from '../lib/i18n';
 import { getLti, setSession, type Session } from '../lib/storage';
-import { Countdown, HistoryChart, RsStandings, ScoreBars, rankedIds, useRsMe, type RsWeb } from './parts';
+import { Countdown, HistoryChart, RsStandings, ScoreBars, fmtNum, rankedIds, useRsMe, type RsWeb } from './parts';
 import { rsWebOf } from './registry';
 
 export function RsPlay({ room, session, now }: { room: RsRoomDoc; session: Session; now: number }) {
@@ -168,7 +168,7 @@ function Results({ room, session, me, web, now }: { room: RsRoomDoc; session: Se
 }
 
 function Final({ room, session, me, web }: { room: RsRoomDoc; session: Session; me: RsMe | null; web: RsWeb }) {
-  const { t, tr } = useLang();
+  const { lang, t, tr } = useLang();
   const nav = useNavigate();
   const pid = session.playerId!;
   const st = room.standings[pid];
@@ -193,7 +193,7 @@ function Final({ room, session, me, web }: { room: RsRoomDoc; session: Session; 
       <div className="pop card text-center">
         <p className="text-5xl">{st?.rank === 1 ? '🏆' : st?.rank === 2 ? '🥈' : st?.rank === 3 ? '🥉' : '🏢'}</p>
         <p className="mt-2 text-2xl font-extrabold">{tr('Rank', 'Hạng')} {st?.rank ?? '–'}/{room.order.length}</p>
-        <p className="text-ink/60">{tr('Scorecard', 'Thẻ mục tiêu')} {st?.score.toFixed(1)}/100{me?.grade != null ? <> · {tr('grade', 'điểm')} {me.grade}/100</> : null}</p>
+        <p className="text-ink/60">{tr('Scorecard', 'Thẻ mục tiêu')} {st ? fmtNum(st.score, lang, 1) : '–'}/100{me?.grade != null ? <> · {tr('grade', 'điểm')} {fmtNum(me.grade, lang, 1)}/100</> : null}</p>
         {winner && winner !== pid && <p className="mt-1 text-sm text-ink/60">{tr('Winner', 'Thắng cuộc')}: {room.players[winner]?.name}</p>}
       </div>
       {player?.lms && (

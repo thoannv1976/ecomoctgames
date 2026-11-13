@@ -1,13 +1,14 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BOT_LEVEL_LABEL, GAMES, type BotLevel, type GameId, type T } from '@arena/types';
+import { RS_READY, rsWebOf } from '../rs/registry';
 import { ErrorNote, MoodleBanner, Shell } from '../components/common';
 import { api } from '../lib/api';
 import { errOf, useLang } from '../lib/i18n';
 import { getLti, getName, setName, setSession } from '../lib/storage';
 
 /** Games already playable; the others show as "coming soon". */
-export const READY: GameId[] = ['unit-economics', 'ceo-sim', 'market-detective', 'platform-wars'];
+export const READY: GameId[] = ['unit-economics', 'ceo-sim', 'market-detective', ...RS_READY];
 
 export function GamePicker({ game, setGame }: { game: GameId; setGame: (g: GameId) => void }) {
   const { t, tr } = useLang();
@@ -65,7 +66,7 @@ export function Home() {
         settings:
           game === 'ceo-sim'
             ? { botLevel: level, fillBots: mode !== 'practice', decideSec: mode === 'invite' ? 360 : 0 }
-            : game === 'platform-wars'
+            : rsWebOf(game)
               ? { botLevel: level, fillBots: mode !== 'practice', decideSec: mode === 'invite' ? 300 : 0 }
             : game === 'market-detective'
               ? { botLevel: level, fillBots: mode !== 'practice', caseSec: mode === 'invite' ? 420 : 0 }
@@ -160,14 +161,10 @@ export function Home() {
         </p>
       </section>
 
-      {game === 'platform-wars' && <section className="mt-4 card text-sm leading-relaxed text-ink/80">
+      {rsWebOf(game) && <section className="mt-4 card text-sm leading-relaxed text-ink/80">
         <h2 className="mb-2 text-base font-bold text-ink">{tr('Scoring', 'Cách tính điểm')}</h2>
         <ul className="list-disc space-y-1 pl-5">
-          <li>{tr('6 quarters, 6 marketplaces in one city, VND 30 bn each. Buyers follow sellers and sellers follow buyers.', '6 quý, 6 sàn trong một thành phố, mỗi sàn 30 tỷ đồng. Người mua theo người bán, người bán theo người mua.')}</li>
-          <li>{tr('Scorecard: cumulative profit 45 + GMV share 25 (worth less if bought with losses) + platform health 30.', 'Thẻ mục tiêu: lợi nhuận lũy kế 45 + thị phần GMV 25 (giảm giá trị nếu mua bằng lỗ) + sức khỏe nền tảng 30.')}</li>
-          <li>{tr('Health falls with counterfeits (too little trust & safety), leakage (take rate too high) and a seller cost above 20%.', 'Sức khỏe giảm khi có hàng giả (chi an toàn – tin cậy quá ít), rò rỉ giao dịch (phí sàn quá cao) và chi phí người bán trên 20%.')}</li>
-          <li>{tr('Out of cash: the bank blocks your subsidies.', 'Hết tiền mặt: ngân hàng chặn trợ giá.')}</li>
-          <li>{tr('Moodle grade = 70% scorecard + 30% rank in the room.', 'Điểm Moodle = 70% thẻ mục tiêu + 30% thứ hạng trong phòng.')}</li>
+          {rsWebOf(game)!.scoring.map(([en, vi]) => <li key={en}>{tr(en, vi)}</li>)}
         </ul>
       </section>}
       {game === 'market-detective' && <section className="mt-4 card text-sm leading-relaxed text-ink/80">

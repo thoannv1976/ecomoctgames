@@ -193,6 +193,7 @@ const NAMES: Record<string, { en: string; vi: string }> = {
   'ceo-sim': { en: 'CEO Simulator', vi: 'Mô phỏng CEO' },
   'market-detective': { en: 'Market Detective', vi: 'Thám tử thị trường' },
   'platform-wars': { en: 'Platform Wars', vi: 'Chiến tranh nền tảng' },
+  'cro-battle': { en: 'CRO Battle', vi: 'Đấu trường A/B' },
 };
 const wrongGame = (r: AnyRoom) =>
   new GameError('wrong_game', { en: `This room plays ${NAMES[r.game]?.en ?? r.game}.`, vi: `Phòng này là game ${NAMES[r.game]?.vi ?? r.game}.` }, 409);

@@ -37,7 +37,7 @@ export interface RsGame<D = any, S = any, R = any, V = any> {
   /** Scorecard 0–100 so far, absolute (not relative to rivals). */
   scorecard(state: S, playerId: string, finished: boolean): RsScorecard;
   /** Leaderboard columns. */
-  cols(state: S, playerId: string): Record<string, number>;
+  cols(state: S, playerId: string, finished: boolean): Record<string, number>;
   flag?(state: S, playerId: string): string | undefined;
   view(state: S, playerId: string, round: number, finished: boolean): V;
   badges?(state: S, playerId: string, order: string[]): string[];
@@ -232,7 +232,7 @@ function refreshStandings(def: RsGame, room: RsRoomDoc, priv: RsPrivate, inputs?
     room.standings[id] = {
       score: Math.round(scores[id]! * 10) / 10,
       rank: i + 1,
-      cols: def.cols(priv.state, id),
+      cols: def.cols(priv.state, id, done),
       ...(inputs?.[id]?.defaulted ? { defaulted: true } : {}),
       ...(flag ? { flag } : {}),
     };

@@ -49,12 +49,15 @@ export interface RsWeb<D = any, R = any, V = any> {
   /** Shown on the final screen from me.view (hidden truths revealed …). */
   Reveal?: ComponentType<{ me: RsMe<R, V>; room: RsRoomDoc }>;
   cols: ColSpec[];
-  chart: { title: T; fmt: (v: number, l: Lang) => string };
+  /** zero: false lets the axis start near the data (rates), true keeps 0 in view (profit). */
+  chart: { title: T; fmt: (v: number, l: Lang) => string; zero?: boolean };
   scoreParts: Record<string, T>;
   scoreMax: Record<string, number>;
   badges: Record<string, T>;
   archetypes: Record<string, T>;
   debrief: [string, string][];
+  /** Scoring rules shown on the home page. */
+  scoring: [string, string][];
   source: T;
 }
 
@@ -150,8 +153,9 @@ export function HistoryChart({ room, web, me, height = 180 }: { room: RsRoomDoc;
   const h = height;
   const pad = 38;
   const vals = rows.flatMap((r) => Object.values(r.values));
-  const max = Math.max(1, ...vals);
-  const min = Math.min(0, ...vals);
+  const zero = web.chart.zero !== false;
+  const max = zero ? Math.max(1, ...vals) : Math.max(...vals) * 1.02;
+  const min = zero ? Math.min(0, ...vals) : Math.min(...vals) * 0.98;
   const xs = (i: number) => pad + (rows.length === 1 ? (w - 2 * pad) / 2 : (i * (w - 2 * pad)) / (rows.length - 1));
   const ys = (v: number) => h - pad - ((v - min) / (max - min || 1)) * (h - 2 * pad);
   const word = t(web.roundWord).slice(0, 1).toUpperCase();
@@ -159,7 +163,7 @@ export function HistoryChart({ room, web, me, height = 180 }: { room: RsRoomDoc;
     <div>
       <p className="mb-1 text-sm font-semibold text-ink/70">{t(web.chart.title)}</p>
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full" role="img" aria-label={t(web.chart.title)}>
-        {[min, 0, max].filter((v, i, a) => a.indexOf(v) === i).map((v) => (
+        {(zero ? [min, 0, max] : [min, max]).filter((v, i, a) => a.indexOf(v) === i).map((v) => (
           <g key={v}>
             <line x1={pad} x2={w - pad} y1={ys(v)} y2={ys(v)} stroke={v === 0 ? '#0b223960' : '#0b223920'} />
             <text x={2} y={ys(v) + 4} fontSize="10" fill="#0b223980">{web.chart.fmt(v, lang)}</text>
