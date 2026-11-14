@@ -17,6 +17,7 @@ import {
   SS_PERSONAS,
   SS_PERSONA_INFO,
   SS_POINTS,
+  SS_POOL,
   SS_RECOVERY,
   SS_RESEARCH,
   SS_ROUNDS,
@@ -186,7 +187,9 @@ export function initSs(order: string[], rng: Rng): SsState {
     for (const s of SS_STAGES) row[s] = r3(BASE_W[p][s]! * (1 + (rng() - 0.5) * 0.08));
     w[p] = row;
   }
-  return { cos, w, pool: { ...SIZE }, funnel: { ...BASE }, channel: {}, incidentDone: false };
+  // Before anyone has done anything, the public repurchase rate is the market's own base loyalty.
+  const loyalty = r3(SS_PERSONAS.reduce((a, p) => a + LOYALTY[p] * SIZE[p], 0) / SS_POOL);
+  return { cos, w, pool: { ...SIZE }, funnel: { ...BASE, repeat: loyalty }, channel: {}, incidentDone: false };
 }
 
 // ───────── the journey ─────────
