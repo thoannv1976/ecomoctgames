@@ -2,8 +2,8 @@
 // Browser-safe: no hidden model here. Each game adds its own content module (pw/types.ts …).
 import type { BotLevel, T } from '../types.js';
 
-export type RsGameId = 'platform-wars' | 'cro-battle' | 'ad-clash' | 'peak-day';
-export const RS_GAME_IDS: RsGameId[] = ['platform-wars', 'cro-battle', 'ad-clash', 'peak-day'];
+export type RsGameId = 'platform-wars' | 'cro-battle' | 'ad-clash' | 'peak-day' | 'wave-rider';
+export const RS_GAME_IDS: RsGameId[] = ['platform-wars', 'cro-battle', 'ad-clash', 'peak-day', 'wave-rider'];
 export const isRsGameId = (g: unknown): g is RsGameId => typeof g === 'string' && (RS_GAME_IDS as string[]).includes(g);
 
 export interface RsSettings {

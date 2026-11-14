@@ -19,10 +19,11 @@ const croAlias = { find: /^@arena\/cro$/, replacement: fileURLToPath(new URL('..
 const adAlias = { find: /^@arena\/ad$/, replacement: fileURLToPath(new URL('../../packages/engine/src/ad/types.ts', import.meta.url)) };
 const pdAlias = { find: /^@arena\/pd$/, replacement: fileURLToPath(new URL('../../packages/engine/src/pd/types.ts', import.meta.url)) };
 const pwAlias = { find: /^@arena\/pw$/, replacement: fileURLToPath(new URL('../../packages/engine/src/pw/types.ts', import.meta.url)) };
+const wrAlias = { find: /^@arena\/wr$/, replacement: fileURLToPath(new URL('../../packages/engine/src/wr/types.ts', import.meta.url)) };
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  resolve: { alias: [typesAlias, ceoAlias, mdAlias, rsAlias, pwAlias, croAlias, adAlias, pdAlias] },
+  resolve: { alias: [typesAlias, ceoAlias, mdAlias, rsAlias, pwAlias, croAlias, adAlias, pdAlias, wrAlias] },
   server: {
     port: 5174,
     strictPort: true,

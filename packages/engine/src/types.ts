@@ -9,7 +9,7 @@ export interface T {
 }
 export const tx = (en: string, vi: string): T => ({ en, vi });
 
-export type GameId = 'unit-economics' | 'ceo-sim' | 'market-detective' | 'platform-wars' | 'cro-battle' | 'ad-clash' | 'peak-day';
+export type GameId = 'unit-economics' | 'ceo-sim' | 'market-detective' | 'platform-wars' | 'cro-battle' | 'ad-clash' | 'peak-day' | 'wave-rider';
 
 export interface GameInfo {
   id: GameId;
@@ -21,6 +21,17 @@ export interface GameInfo {
 }
 
 export const GAMES: Record<GameId, GameInfo> = {
+  'wave-rider': {
+    id: 'wave-rider',
+    chapter: 1,
+    icon: '🌊',
+    name: tx('Wave Rider', 'Đón sóng'),
+    short: tx(
+      'Six founders ride five waves of Vietnamese e-commerce. Split your capital chips across six business models: the infrastructure of each era decides which one pays, and the crowd eats the return.',
+      'Sáu nhà sáng lập đi qua năm làn sóng TMĐT Việt Nam. Chia chip vốn cho sáu mô hình: hạ tầng của mỗi thời quyết định mô hình nào có lãi, và đông người thì hết lãi.',
+    ),
+    minutes: tx('15 min', '15 phút'),
+  },
   'unit-economics': {
     id: 'unit-economics',
     chapter: 9,
