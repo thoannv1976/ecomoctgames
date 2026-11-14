@@ -18,7 +18,7 @@ Bốn game đầu dùng lại khung `packages/engine/src/rs/` của đợt 2: ph
 
 **Điểm Moodle (giống đợt 2):** 70% thẻ mục tiêu (tuyệt đối, 0–100) + 30% thứ hạng trong phòng, thang 10, lấy lần cao nhất.
 
-## 2. Game 1 · Wave Rider (Chương 1)
+## 2. Game 1 · Wave Rider (Chương 1) — ĐÃ XONG
 
 **5 vòng = năm làn sóng của TMĐT Việt Nam** (mục 2.2 của chương): rao vặt và diễn đàn → mua theo nhóm và sàn thế hệ đầu → sàn hiện đại và ví điện tử → nội dung và livestream → dữ liệu, pháp lý và AI.
 
@@ -33,16 +33,21 @@ Bốn game đầu dùng lại khung `packages/engine/src/rs/` của đợt 2: ph
 
 **Máy chơi:** đoán theo mốt (chạy theo mô hình đang thắng), ôm website, tất tay livestream, cân bằng, đi muộn một nhịp, và "đọc hạ tầng" (kiểu thắng).
 
-## 3. Game 3 · Shopper Stream (Chương 3)
+## 3. Game 3 · Shopper Stream (Chương 3) — ĐÃ XONG
 
-1.000 khách ảo thuộc 6 chân dung đi qua hành trình Khám phá → Tìm kiếm → So sánh → Mua → Đánh giá → Mua lại; sáu thương hiệu cùng giành nhóm khách này, 5 vòng.
+120.000 khách ảo thuộc 6 chân dung đi qua hành trình Khám phá → Tìm kiếm → So sánh → Mua → Đánh giá → Mua lại; sáu thương hiệu cùng giành tập khách này, 5 tháng.
 
-- 10 điểm mỗi vòng để sửa các bước trong hành trình (ảnh, đánh giá, giao nhanh, đổi trả, chăm sóc sau mua…).
-- Chọn kênh: tìm kiếm trên Shopee, khám phá trên TikTok Shop, hoặc AI agent.
-- Đào dữ liệu đánh giá hoặc phỏng vấn để lộ Jobs – Pains – Gains của một chân dung.
-- Sự kiện giao hàng lỗi rơi vào một người chơi: xử lý tốt thì khách trung thành hơn trước (nghịch lý phục hồi dịch vụ).
+- **10 điểm mỗi tháng** để sửa sáu bước trong hành trình. Lợi ích mỗi bước giảm dần theo số điểm, nên không thể sửa hết và cũng không nên dồn hết vào một bước.
+- **Chọn kênh**: tìm kiếm trên sàn (vào từ bước Tìm kiếm), khám phá trên video ngắn (vào từ bước Khám phá, tiếp cận lớn nhất và hành trình dài nhất), hoặc AI agent mua hộ (vào từ bước So sánh, nhỏ nhưng giá trị cao và gần như thắng ăn cả).
+- **Chân dung có nỗi đau ẩn**: mỗi chân dung thật sự rơi rụng ở một bước cụ thể (bảng trọng số ẩn ở máy chủ). Đào dữ liệu đánh giá của mình thì miễn phí nhưng chỉ nói thay cho chân dung đã mua của bạn; phỏng vấn tốn 1 trong 10 điểm nhưng bạn chọn người để nghe. Hiểu một chân dung làm mọi cải thiện tác dụng tốt hơn với nhóm đó.
+- **Đánh giá có độ trễ**: điểm bỏ vào bước Đánh giá không sinh ra đơn ngay, nó tạo kho đánh giá thật và làm bước So sánh của tháng sau dễ hơn.
+- **Sự cố giao hàng** rơi vào thương hiệu có nhiều khách nhất sau tháng 2. Không làm gì thì khách rời đi và còn lại đánh giá một sao; hoàn tiền thì giữ được như cũ; hoàn tiền kèm xin lỗi và chăm sóc tiếp thì khách quay lại trung thành **hơn trước khi có sự cố** (nghịch lý phục hồi dịch vụ).
 
-**Thắng:** CLV của nhóm khách giữ được, không tính khách mua một lần. **Bài học:** chỗ rơi rụng nhiều nhất chưa chắc đáng sửa nhất; không phải ma sát nào cũng xấu.
+**Thẻ mục tiêu (0–100):** giá trị khách giữ được 55 + tỷ lệ đơn từ khách quay lại 25 + điểm bỏ vào đúng chỗ đáng nhất 20. Phần thứ ba so kế hoạch của người chơi với mức tốt nhất mà đúng số điểm đó có thể mua được trong tháng, nên nó thưởng cho việc hỏi "một điểm bỏ vào đây đáng bao nhiêu".
+
+**Cân bằng** (`scripts/balance-ss.ts`, mức Vừa, 150 ván): nghiên cứu rồi mới sửa 74 điểm (thắng 97%), chỉ sửa bước mua 49, đặt cược vào agent 39, chia đều 34, chạy theo giỏ hàng lớn 19, sửa chỗ rơi rụng lớn nhất 19.
+
+**Bài học:** chỗ rơi rụng nhiều nhất chưa chắc đáng sửa nhất; doanh thu từ khách mua một lần không tạo ra gì; đào đánh giá của mình chỉ nghe được người đã mua; sự cố được xử lý đúng cách tạo ra khách trung thành hơn.
 
 ## 4. Game 10 · Agent Arena (Chương 10)
 
