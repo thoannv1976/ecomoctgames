@@ -65,6 +65,8 @@ Năm quý của 2027–2028. Phần đơn hàng do AI agent đặt thay vì ngư
 
 **Bài học:** tối ưu cho agent không thay cho tối ưu cho người, hãy làm tốt phần giao nhau; năng lực AI không phải lợi thế khi ai cũng có; mức tự chủ phải ngược với mức độ không thể hoàn tác; và tự động hóa không xóa được trách nhiệm.
 
+**Đã vào Moodle** 2026-11-14: khóa 33, cmid 5795. Chạy thử có điểm: phòng N7ZQ8, hạng 2/6, thẻ mục tiêu 73,7 → 7,56/10 trong Sổ điểm.
+
 ## 5. Game 11 · Border Run (Chương 11)
 
 Sáu thương hiệu Việt đưa một sản phẩm ra nước ngoài, 5 vòng.
