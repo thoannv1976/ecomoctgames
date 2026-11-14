@@ -2,6 +2,7 @@ import type { RsGameId } from '@arena/rs';
 import type { GameId } from '@arena/types';
 import { AD_WEB } from '../ad/AdWeb';
 import { AG_WEB } from '../ag/AgWeb';
+import { BR_WEB } from '../br/BrWeb';
 import { CRO_WEB } from '../cro/CroWeb';
 import { PD_WEB } from '../pd/PdWeb';
 import { PW_WEB } from '../pw/PwWeb';
@@ -17,6 +18,7 @@ const WEB: Partial<Record<RsGameId, RsWeb>> = {
   'wave-rider': WR_WEB,
   'shopper-stream': SS_WEB,
   'agent-arena': AG_WEB,
+  'border-run': BR_WEB,
 };
 
 export const rsWebOf = (id: string): RsWeb | undefined => WEB[id as RsGameId];

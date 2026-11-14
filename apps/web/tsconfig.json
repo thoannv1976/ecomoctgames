@@ -17,7 +17,8 @@
       "@arena/pd": ["../../packages/engine/src/pd/types.ts"],
       "@arena/wr": ["../../packages/engine/src/wr/types.ts"],
       "@arena/ss": ["../../packages/engine/src/ss/types.ts"],
-      "@arena/ag": ["../../packages/engine/src/ag/types.ts"]
+      "@arena/ag": ["../../packages/engine/src/ag/types.ts"],
+      "@arena/br": ["../../packages/engine/src/br/types.ts"]
     }
   },
   "include": ["src"]

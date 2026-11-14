@@ -9,7 +9,7 @@ export interface T {
 }
 export const tx = (en: string, vi: string): T => ({ en, vi });
 
-export type GameId = 'agent-arena' | 'shopper-stream' | 'unit-economics' | 'ceo-sim' | 'market-detective' | 'platform-wars' | 'cro-battle' | 'ad-clash' | 'peak-day' | 'wave-rider';
+export type GameId = 'border-run' | 'agent-arena' | 'shopper-stream' | 'unit-economics' | 'ceo-sim' | 'market-detective' | 'platform-wars' | 'cro-battle' | 'ad-clash' | 'peak-day' | 'wave-rider';
 
 export interface GameInfo {
   id: GameId;
@@ -42,6 +42,17 @@ export const GAMES: Record<GameId, GameInfo> = {
       'Sáu thương hiệu giành cùng 120.000 khách qua sáu bước hành trình khách hàng. Mỗi tháng mười điểm cải thiện – và cuối cùng chỉ tính giá trị của những khách đã quay lại.',
     ),
     minutes: tx('25–30 min', '25–30 phút'),
+  },
+  'border-run': {
+    id: 'border-run',
+    chapter: 11,
+    icon: '🛂',
+    name: tx('Border Run', 'Vượt biên'),
+    short: tx(
+      'Six Vietnamese brands take one product abroad over five quarters. Read the market score and every line of the landed cost, build a trust stack that fails at its lowest layer – and find out which of your advantages you were only renting.',
+      'Sáu thương hiệu Việt đưa một sản phẩm ra nước ngoài trong năm quý. Đọc bảng điểm thị trướng và từng dòng chi phí đến tay khách, xây chồng niềm tin vỡ ở lớp thấp nhất – và biết lợi thế nào của mình chỉ là đi thuê.',
+    ),
+    minutes: tx('30–35 min', '30–35 phút'),
   },
   'agent-arena': {
     id: 'agent-arena',
