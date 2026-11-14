@@ -49,14 +49,21 @@ Bốn game đầu dùng lại khung `packages/engine/src/rs/` của đợt 2: ph
 
 **Bài học:** chỗ rơi rụng nhiều nhất chưa chắc đáng sửa nhất; doanh thu từ khách mua một lần không tạo ra gì; đào đánh giá của mình chỉ nghe được người đã mua; sự cố được xử lý đúng cách tạo ra khách trung thành hơn.
 
-## 4. Game 10 · Agent Arena (Chương 10)
+## 4. Game 10 · Agent Arena (Chương 10) — ĐÃ XONG
 
-Năm 2027, một phần khách nhờ AI agent mua hộ; sáu người bán cạnh tranh để được agent chọn, 5 vòng.
+Năm quý của 2027–2028. Phần đơn hàng do AI agent đặt thay vì người đặt tăng từ 10% lên 58%; sáu người bán cạnh tranh để được agent chọn và để vẫn giữ được khách là người thật.
 
-- Đầu tư: danh mục có cấu trúc và chính sách máy đọc được (API), chất lượng đánh giá, định giá động, hệ thống gợi ý, chatbot.
-- Rủi ro cài sẵn: chatbot nói sai, định giá động gây phản ứng, gợi ý "đúng mà vô ích", agent đặt nhầm 5.000 đơn.
+- **Tám quý-kỹ-sư mỗi quý** để xây tám năng lực AI, mỗi năng lực ba mức. Năm năng lực do **máy đọc**: thuộc tính chuẩn, tồn kho trực tuyến, tổng chi phí máy đọc được, chính sách có cấu trúc, API đặt hàng kèm định danh và hạn mức. Ba năng lực do **người cảm nhận**: hệ gợi ý, trợ lý AI, bằng chứng đáng tin (đánh giá đã xác thực, tỷ lệ giao đúng hẹn).
+- **API đặt hàng là cánh cổng**: chưa có thì agent chỉ đọc được trang của bạn, không mua được — bạn được tham khảo chứ không được giao dịch. Phần khách qua agent dồn rất mạnh về cửa hàng trông tốt nhất, và đơn từ agent có lợi nhuận đóng góp cao hơn vì không cần thuyết phục.
+- **Thứ đã xây thì vẫn còn đó — và vẫn tốn chi phí vận hành hằng quý.** Mua hết AI một lượt thì lỗ.
+- **Rủi ro cài sẵn, lấy đúng từ chương 10**: máy định giá không có giá trần giá sàn (lỗi cấu hình, và khách so ảnh chụp giá với nhau); trợ lý không bao giờ chuyển người (trả lời sai câu hoàn tiền và bảo hành); hệ gợi ý không có ràng buộc đa dạng (dồn danh mục, đuôi dài chết dần, khách quay lại thấy đúng một cửa hàng); API đặt hàng được cấp quyền trên số tồn cũ một ngày (nhận hàng nghìn đơn cho hàng không có); và bảng điều khiển không có nhóm đối chứng (ghi công cho hệ gợi ý cả phần khách vốn đã mua).
+- Mỗi quý người chơi thấy phần agent của quý này và **dự báo quý sau**, nên đọc đường cong là kỹ năng chính.
 
-**Thắng:** lợi nhuận tăng thêm nhờ AI trừ chi phí rủi ro. **Bài học:** ngoài UX cho người còn phải tối ưu AX cho agent; thuật toán cần người kiểm soát.
+**Thẻ mục tiêu (0–100):** lợi nhuận cộng dồn 50 + giành được đơn từ agent 25 + mọi hệ thống tự động đều có người kiểm soát 25.
+
+**Cân bằng** (`scripts/balance-ag.ts`, mức Vừa, 150 ván): đi theo đường cong agent và giữ kiểm soát 77 điểm (thắng 93%), chỉ lo cho người 52, tất tay vào agent từ quý 1 38, mua hết AI một lượt 35, hệ thống tốt nhưng không kiểm soát 23, giữ tiền không làm gì 15.
+
+**Bài học:** tối ưu cho agent không thay cho tối ưu cho người, hãy làm tốt phần giao nhau; năng lực AI không phải lợi thế khi ai cũng có; mức tự chủ phải ngược với mức độ không thể hoàn tác; và tự động hóa không xóa được trách nhiệm.
 
 ## 5. Game 11 · Border Run (Chương 11)
 
