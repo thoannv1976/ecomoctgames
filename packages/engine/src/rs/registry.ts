@@ -1,6 +1,7 @@
 // Server-side registry of the round-sim games (hidden models included – never import from the browser).
 import { GameError } from '../room.js';
 import { AD_CLASH } from '../ad/game.js';
+import { AGENT_ARENA } from '../ag/game.js';
 import { CRO_BATTLE } from '../cro/game.js';
 import { PEAK_DAY } from '../pd/game.js';
 import { PLATFORM_WARS } from '../pw/game.js';
@@ -16,6 +17,7 @@ export const RS_GAMES: Partial<Record<RsGameId, RsGame>> = {
   'peak-day': PEAK_DAY,
   'wave-rider': WAVE_RIDER,
   'shopper-stream': SHOPPER_STREAM,
+  'agent-arena': AGENT_ARENA,
 };
 
 export function rsGame(id: string): RsGame {

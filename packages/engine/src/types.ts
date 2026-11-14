@@ -9,7 +9,7 @@ export interface T {
 }
 export const tx = (en: string, vi: string): T => ({ en, vi });
 
-export type GameId = 'shopper-stream' | 'unit-economics' | 'ceo-sim' | 'market-detective' | 'platform-wars' | 'cro-battle' | 'ad-clash' | 'peak-day' | 'wave-rider';
+export type GameId = 'agent-arena' | 'shopper-stream' | 'unit-economics' | 'ceo-sim' | 'market-detective' | 'platform-wars' | 'cro-battle' | 'ad-clash' | 'peak-day' | 'wave-rider';
 
 export interface GameInfo {
   id: GameId;
@@ -42,6 +42,17 @@ export const GAMES: Record<GameId, GameInfo> = {
       'Sáu thương hiệu giành cùng 120.000 khách qua sáu bước hành trình khách hàng. Mỗi tháng mười điểm cải thiện – và cuối cùng chỉ tính giá trị của những khách đã quay lại.',
     ),
     minutes: tx('25–30 min', '25–30 phút'),
+  },
+  'agent-arena': {
+    id: 'agent-arena',
+    chapter: 10,
+    icon: '🤖',
+    name: tx('Agent Arena', 'Đấu trường AI agent'),
+    short: tx(
+      'In 2027 a growing share of orders is placed by AI agents. Six sellers build eight AI capabilities and decide which automated system gets a human control – and everything you hold costs money to run.',
+      'Năm 2027 ngày càng nhiều đơn do AI agent đặt. Sáu người bán xây tám năng lực AI và quyết định hệ thống tự động nào có người kiểm soát – và mọi thứ bạn giữ đều tốn chi phí vận hành.',
+    ),
+    minutes: tx('30–35 min', '30–35 phút'),
   },
   'unit-economics': {
     id: 'unit-economics',

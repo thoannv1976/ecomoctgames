@@ -20,11 +20,12 @@ const adAlias = { find: /^@arena\/ad$/, replacement: fileURLToPath(new URL('../.
 const pdAlias = { find: /^@arena\/pd$/, replacement: fileURLToPath(new URL('../../packages/engine/src/pd/types.ts', import.meta.url)) };
 const pwAlias = { find: /^@arena\/pw$/, replacement: fileURLToPath(new URL('../../packages/engine/src/pw/types.ts', import.meta.url)) };
 const wrAlias = { find: /^@arena\/wr$/, replacement: fileURLToPath(new URL('../../packages/engine/src/wr/types.ts', import.meta.url)) };
+const agAlias = { find: /^@arena\/ag$/, replacement: fileURLToPath(new URL('../../packages/engine/src/ag/types.ts', import.meta.url)) };
 const ssAlias = { find: /^@arena\/ss$/, replacement: fileURLToPath(new URL('../../packages/engine/src/ss/types.ts', import.meta.url)) };
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  resolve: { alias: [typesAlias, ceoAlias, mdAlias, rsAlias, pwAlias, croAlias, adAlias, pdAlias, wrAlias, ssAlias] },
+  resolve: { alias: [typesAlias, ceoAlias, mdAlias, rsAlias, pwAlias, croAlias, adAlias, pdAlias, wrAlias, ssAlias, agAlias] },
   server: {
     port: 5174,
     strictPort: true,
