@@ -694,7 +694,9 @@ export const SHOPPER_STREAM: RsGame<SsDecision, SsState, SsReport, SsView> = {
   id: 'shopper-stream',
   rounds: SS_ROUNDS,
   label: 'Shopper Stream',
-  botNames: ['LuotNhanh', 'QuaTang24h', 'ShopGonLe', 'DeuTay', 'AgentFirst', 'HanhTrinh'],
+  // Neutral shop names: names are handed out by seat and archetypes at random, so a name
+  // must never hint at the strategy behind it.
+  botNames: ['NhaXanh', 'ChoMai', 'BupSen', 'HaiAu', 'AnKhang', 'ThaoNguyen'],
   archetypes: ['volume', 'gifts', 'checkout', 'spread', 'agentfirst', 'journey'],
   defaultSettings: { decideSec: 240, resultsSec: 0, botLevel: 'medium', fillBots: true },
   init: (order, _room, rng) => initSs(order, rng),

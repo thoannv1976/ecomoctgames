@@ -543,7 +543,9 @@ export const AGENT_ARENA: RsGame<AgDecision, AgState, AgReport, AgView> = {
   id: 'agent-arena',
   rounds: AG_ROUNDS,
   label: 'Agent Arena',
-  botNames: ['MuaHetAI', 'NguoiTruoc', 'AgentSom', 'GiuTien', 'KhongPhanh', 'CanBang'],
+  // Neutral shop names: the framework hands out names by seat and archetypes at random,
+  // so a name must never hint at the strategy behind it.
+  botNames: ['SenMart', 'NhaViet', 'ChoDien', 'TanPhat', 'MinhLong', 'BaoAn'],
   archetypes: ['allin', 'human', 'agentearly', 'cheap', 'nogov', 'balanced'],
   defaultSettings: { decideSec: 240, resultsSec: 0, botLevel: 'medium', fillBots: true },
   init: (order, _room, rng) => initAg(order, rng),
