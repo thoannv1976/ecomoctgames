@@ -67,14 +67,25 @@ Năm quý của 2027–2028. Phần đơn hàng do AI agent đặt thay vì ngư
 
 **Đã vào Moodle** 2026-11-14: khóa 33, cmid 5795. Chạy thử có điểm: phòng N7ZQ8, hạng 2/6, thẻ mục tiêu 73,7 → 7,56/10 trong Sổ điểm.
 
-## 5. Game 11 · Border Run (Chương 11)
+## 5. Game 11 · Border Run (Chương 11) — ĐÃ XONG
 
-Sáu thương hiệu Việt đưa một sản phẩm ra nước ngoài, 5 vòng.
+Năm quý của năm 2027. Sáu thương hiệu Việt đưa một sản phẩm ra nước ngoài qua bốn thị trường: Hoa Kỳ, Liên minh châu Âu, Nhật Bản, Singapore.
 
-- Chọn nước theo bảng chấm điểm của chương; Incoterms, mã HS, ngưỡng de minimis; kho FBA hay tự giao FBM; bản địa hóa bằng AI (có lỗi cài sẵn).
-- Thẻ cám dỗ: đánh giá giả, dark pattern, bỏ kiểm tra người bán. Tăng doanh số ngay nhưng có xác suất bị sàn phát hiện ở vòng sau; cuối game lật xác suất và mức phạt thật.
+- **Mọi con số một nhà quản lý phải hỏi đều công khai**: bảng điểm thị trường có trọng số của chương (tiềm năng 20%, phù hợp khách hàng và tuân thủ 15%, cạnh tranh / hậu cần / tiếp cận sàn 10%, lợi nhuận và cơ hội thương hiệu 10%) và **cả bảy dòng chi phí đến tay khách** cho một đơn. Máy tính chi phí trên màn hình dùng đúng hàm `brLanded()` mà máy chủ dùng để kết toán, nên con số sinh viên thấy chính là con số thật. Điểm: Hoa Kỳ 3,95 · Singapore 3,50 · Nhật Bản 3,45 · EU 3,35.
+- **Thang hình thức vào thị trường** (leo lên được, không lùi lại được): nhà phân phối 1 → sàn toàn cầu 3 → website riêng 5 → giữ hàng tại nước đến 7 quý-nhân-sự tính từ chưa bán. Nhà phân phối rẻ nhất nhưng mất khách và lợi nhuận mỏng nhất; sàn là đi thuê lưu lượng, thanh toán và niềm tin — và thứ đi thuê thì có thể bị lấy lại.
+- **Chồng niềm tin sáu lớp** (danh tính, tuân thủ sản phẩm, nội dung và lời quảng cáo, cam kết giao hàng, đổi trả, dữ liệu cá nhân) × 3 mức. Chỉ số niềm tin = 60% lớp thấp nhất + 40% trung bình, và **niềm tin là thứ chuyển đổi** người mua ở nước ngoài. Mỗi thị trường có một mức kỳ vọng ẩn theo từng lớp; thiếu càng nhiều thì càng dễ bị yêu cầu xuất bằng chứng, và thiếu từ 2 mức thì bị gỡ bài bán cả quý.
+- **Bẫy trải nghiệm của Incoterms**: giao tại nơi đến làm giá niêm yết thấp hơn 7% và thuế rời khỏi bảng tính — rồi 18% số kiện bị khách từ chối ngay ở cửa, mất hàng, mất phí vận chuyển hai chiều và mất khách. Ở Hoa Kỳ, lợi nhuận đóng góp mỗi đơn rơi từ 10% xuống 4%.
+- **Lợi thế đi thuê**: Nhật Bản còn miễn thuế kiện nhỏ (đóng góp 28%/đơn), nhưng **hết hiệu lực từ quý 4** và điều đó được thông báo trước một quý. Khi mất, thuế lên đủ và phí thông quan mỗi kiện tăng gấp ba, đóng góp còn ~11%: mô hình đổi chứ không chỉ giá đổi, và câu trả lời là đưa hàng đi trước theo lô vào kho tại nước đến.
+- **Nhãn hiệu có tính lãnh thổ**: bán mà không đăng ký thì khi doanh thu ở đó vượt ngưỡng, có người đăng ký trước và thị trường đó đóng vĩnh viễn.
+- **Năm thẻ cám dỗ** (mỗi quý tối đa 2, không tốn quý-nhân-sự): mua đánh giá, đồng hồ đếm ngược tự chạy lại, bảo hiểm tự đánh dấu sẵn, ẩn phí tới màn hình cuối, khai thấp trị giá hải quan. Mỗi thẻ tăng ngay một thứ và mang một xác suất bị phát hiện **tăng theo lượng hàng bán** và theo số lần đã dùng. Ba lần vi phạm thì tài khoản sàn bị đóng. **Cuối trận lật toàn bộ**: số lần nhận, số lần bị bắt, xác suất thật, kiếm được bao nhiêu và phải trả bao nhiêu.
 
-**Thắng:** lợi nhuận × chỉ số niềm tin. **Bài học:** ranh giới thuyết phục – thao túng; nhãn hiệu đăng ký ở Việt Nam không có hiệu lực ở nước ngoài.
+**Thẻ mục tiêu (0–100):** lợi nhuận cộng dồn 50 + chỉ số niềm tin 30 + giấy phép để tiếp tục bán 20 (đăng ký nhãn ở mọi thị trường đang bán, đạt mức kỳ vọng của thị trường, có người phê duyệt nội dung, niêm yết giá gồm mọi khoản, không nhận lối tắt, lớp thấp nhất từ mức 2).
+
+**Cân bằng** (`scripts/balance-br.ts`, 150 ván): đọc bảng điểm và đọc chính sách 74 điểm (thắng 94%), xây quá kỹ một thị trường nhỏ 40, vào khắp nơi một lúc 38, bán qua nhà phân phối 21, chạy theo thị trường miễn thuế 16, nhận mọi lối tắt 7. Mức Dễ 70 / Vừa 74 / Khó 77.
+
+**Bài học:** sàn hạ rào cản nhưng không hạ nghĩa vụ; giá không phải là tiền về; chồng niềm tin vỡ ở lớp thiếu thấp nhất nên hãy báo giá trị nhỏ nhất bên cạnh trung bình; thuyết phục thành thao túng khi thông tin sai, khi lựa chọn ngược lại khó hơn, hoặc khi khách sẽ thấy mình bị lừa; đăng ký ở Việt Nam không bảo hộ ở nước ngoài; và ở thị trường toàn cầu một sai sót có thể mất luôn quyền được bán — nên tuân thủ và niềm tin là giấy phép để tiếp tục lớn.
+
+**Đang chạy trên production** từ 2026-11-14 (`arena-api-00014-scn`). Chưa vào Moodle: chờ merge PR danh mục Hub #16.
 
 ## 6. Game 5 · Pitch Arena (Chương 5)
 
