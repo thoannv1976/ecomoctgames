@@ -4,6 +4,7 @@ import { AD_WEB } from '../ad/AdWeb';
 import { CRO_WEB } from '../cro/CroWeb';
 import { PD_WEB } from '../pd/PdWeb';
 import { PW_WEB } from '../pw/PwWeb';
+import { SS_WEB } from '../ss/SsWeb';
 import { WR_WEB } from '../wr/WrWeb';
 import type { RsWeb } from './parts';
 
@@ -13,6 +14,7 @@ const WEB: Partial<Record<RsGameId, RsWeb>> = {
   'ad-clash': AD_WEB,
   'peak-day': PD_WEB,
   'wave-rider': WR_WEB,
+  'shopper-stream': SS_WEB,
 };
 
 export const rsWebOf = (id: string): RsWeb | undefined => WEB[id as RsGameId];

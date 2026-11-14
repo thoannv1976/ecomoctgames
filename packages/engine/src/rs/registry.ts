@@ -4,6 +4,7 @@ import { AD_CLASH } from '../ad/game.js';
 import { CRO_BATTLE } from '../cro/game.js';
 import { PEAK_DAY } from '../pd/game.js';
 import { PLATFORM_WARS } from '../pw/game.js';
+import { SHOPPER_STREAM } from '../ss/game.js';
 import { WAVE_RIDER } from '../wr/game.js';
 import type { RsGame } from './room.js';
 import type { RsGameId } from './types.js';
@@ -14,6 +15,7 @@ export const RS_GAMES: Partial<Record<RsGameId, RsGame>> = {
   'ad-clash': AD_CLASH,
   'peak-day': PEAK_DAY,
   'wave-rider': WAVE_RIDER,
+  'shopper-stream': SHOPPER_STREAM,
 };
 
 export function rsGame(id: string): RsGame {

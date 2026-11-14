@@ -9,7 +9,7 @@ export interface T {
 }
 export const tx = (en: string, vi: string): T => ({ en, vi });
 
-export type GameId = 'unit-economics' | 'ceo-sim' | 'market-detective' | 'platform-wars' | 'cro-battle' | 'ad-clash' | 'peak-day' | 'wave-rider';
+export type GameId = 'shopper-stream' | 'unit-economics' | 'ceo-sim' | 'market-detective' | 'platform-wars' | 'cro-battle' | 'ad-clash' | 'peak-day' | 'wave-rider';
 
 export interface GameInfo {
   id: GameId;
@@ -31,6 +31,17 @@ export const GAMES: Record<GameId, GameInfo> = {
       'Sáu nhà sáng lập đi qua năm làn sóng TMĐT Việt Nam. Chia chip vốn cho sáu mô hình: hạ tầng của mỗi thời quyết định mô hình nào có lãi, và đông người thì hết lãi.',
     ),
     minutes: tx('15 min', '15 phút'),
+  },
+  'shopper-stream': {
+    id: 'shopper-stream',
+    chapter: 3,
+    icon: '🧭',
+    name: tx('Shopper Stream', 'Dòng khách hàng'),
+    short: tx(
+      'Six brands compete for the same 120,000 shoppers across the six steps of the customer journey. Ten improvement points a month – and what is counted at the end is the value of the customers who came back.',
+      'Sáu thương hiệu giành cùng 120.000 khách qua sáu bước hành trình khách hàng. Mỗi tháng mười điểm cải thiện – và cuối cùng chỉ tính giá trị của những khách đã quay lại.',
+    ),
+    minutes: tx('25–30 min', '25–30 phút'),
   },
   'unit-economics': {
     id: 'unit-economics',
